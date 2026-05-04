@@ -46,7 +46,7 @@ openssl.cafile = "C:/path/to/cacert.pem"
 You can also set sslVerify explicitly. Download the lastest cacert.pem file here: https://curl.se/docs/caextract.html. Set the path to the cacert in the .ini file. You can also 
 set sslVerify to 'true'
 
-If necessary, you can set sslVerify to false. This is highly unsecure and it now recommended.
+If necessary, you can set sslVerify to false. This is highly unsecure and it not recommended.
 
 
 ## Using the package
