@@ -1,6 +1,12 @@
-# phpFolioClient
-to deploy, copy the composer.json file (or create a new composer.json file and paste in the below) to the root of the folder where you will be working
+# phpFolioClient Setup Guide
 
+## Installation
+
+To deploy, copy the `composer.json` file (or create a new one) to the root of your working directory.
+
+### composer.json
+
+```json
 {
     "repositories": [
         {
@@ -12,6 +18,13 @@ to deploy, copy the composer.json file (or create a new composer.json file and p
         "marnold-ebsco/phpfolioclient": "^0.9.0"
     }
 }
+```
+
+Then run:
+
+```bash
+composer require marnold-ebsco/phpfolioclient:^0.9.0
+```
 
 type: composer require marnold-ebsco/phpfolioclient:^0.9.0
 create an ini file using this template:
