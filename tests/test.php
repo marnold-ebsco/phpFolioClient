@@ -1,9 +1,8 @@
 <?php
-require_once('vendor/autoload.php');
+require_once('../vendor/autoload.php');
 
 use phpFolioClient\phpFolioClient;
 
-$hostname = 'snapshot';
 $hostname = 'lsedemo';
 
 try{
@@ -13,11 +12,11 @@ try{
     exit;
 }
 
-// export tests take some time,but they exercise the postFile and getFile methods
+// export tests take some time, but they exercise the postFile and getFile methods
 $doExportTests = false;
 
-$scriptBegin=microtime(true);
 
+$scriptBegin=microtime(true);
 print "Username: " . $folio->getUsername() . PHP_EOL;
 if($doExportTests){
     print "  Export tests will be performed\n\n";
