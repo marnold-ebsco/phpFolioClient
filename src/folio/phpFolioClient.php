@@ -961,6 +961,7 @@ class phpFolioClient {
     private function _handleServerException($e){
         if($e->hasResponse()){
             $response = $e->getResponse();
+            $this->lastStatusCode = $response->getStatusCode();
             $body = $this->getLastStatusCode() . ": " . $response->getBody()->getContents();
             if($this->logPath){
                 $now = new \DateTime();
