@@ -25,6 +25,33 @@ if($doExportTests){
 }
 
 try{
+    print "Testing settings\n";
+    $begin=microtime(true);
+    $timeout = $folio->getTimeout();
+    $folio->setTimeout(($timeout * 2));
+    $newTimeout = $folio->getTimeout();
+    if($newTimeout != (2 * $timeout)){
+        throw new Exception("Timeout not set correctly");
+    }
+
+    $folio->setVerbose(true);
+    $folio->setVerbose(false);
+
+    print "API url: " . $folio->getUrl() . PHP_EOL;
+    print "Hostname: " . $folio->getHostname() . PHP_EOL;
+    print "Tenant id: " . $folio->getTenantId() . PHP_EOL;
+    print "Central tenant id: " . $folio->getCentralTenantId() . PHP_EOL;
+    print "Username: " . $folio->getUsername() . PHP_EOL;
+    print "Timeout: $timeout\n";
+
+}catch(Exception $e){
+    print "  Exception: " . $e->getMessage() . PHP_EOL;
+}finally{
+    print "Elapsed time: " . number_format((microtime(true) - $begin),2) . " seconds.\n\n";
+}
+
+
+try{
     print "Testing getModules\n";
     $begin=microtime(true);
     $modules = $folio->getModules();
@@ -100,6 +127,25 @@ try{
 }finally{
     print "Elapsed time: " . number_format((microtime(true) - $begin),2) . " seconds.\n\n";
 }
+
+try{
+    print "Testing GET ALL with query\n";
+    $begin=microtime(true);
+    $limit = 10000;
+    $count = 0;
+    foreach($folio->getAll('instance-storage/instances','instances',['query'=>'source==MARC','limit'=>$limit]) as $instance){        
+        if(($count % $limit) == 0){
+            print "Count: $count\r";
+        }
+        $count++;
+    }
+    print "Count: $count\n";
+}catch(Exception $e){
+    print "  Exception: " . $e->getMessage() . PHP_EOL;
+}finally{
+    print "Elapsed time: " . number_format((microtime(true) - $begin),2) . " seconds.\n\n";
+}
+
 
 try{
     print "Testing GET ALL BY OFFSET with query\n";

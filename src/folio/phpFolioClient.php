@@ -71,47 +71,42 @@ class phpFolioClient {
         $this->connect();
         $this->okapiUrl = trim($this->okapiUrl, "/");
 
-        if($logPath){
-            try{
-                $this->logFh = fopen($logPath, 'w');
-            }catch(\Exception $e){
-                throw new \Exception('Problem opening FOLIO client log file: ' . $e->getMessage());
+        if ($logPath) {
+            $fh = fopen($logPath, 'w');
+            if ($fh === false) {
+                throw new \Exception("Problem opening FOLIO client log file: $logPath");
             }
+            $this->logFh = $fh;
         }
     }
 
-    private function _initializeConnection($connection){
+    private function _initializeConnection(mixed $connection): void{
         $keys = [];
         
-        switch(gettype($connection)){
-            case 'object':
-                $keys = array_keys(get_object_vars($connection));
-                foreach($keys as $key){
-                    $this->$key = $connection->$key;
-                }
-                break;
-            case 'array':
-                foreach($connection as $key => $value){
-                    $this->$key = $value;
-                    $keys[] = $key;
-                }
-                break;
-            case 'string':
-                if(!file_exists($connection)){
-                    throw new \Exception("File: $connection does not exist");
-                }
-                $success = parse_ini_file($connection);
-                if(!$success){
-                    throw new \Exception("File: $connection is not an ini file");
-                }
-                foreach($success as $key => $value){
-                    $this->$key = $value;
-                    $keys[] = $key;
-                }
-                break;
-            default:
-                throw new \Exception("Connection type not recognized.");
+        $data = match(gettype($connection)) {
+            'object' => get_object_vars($connection),
+            'array' => $connection,
+            'string' => $this->_parseConnectionFile($connection),
+            default => throw new \Exception("Connection type not recognized.")
+        };
+
+        foreach ($data as $key => $value) {
+            $this->$key = $value;
+            $keys[] = $key;
         }
+        }
+
+        private function _parseConnectionFile(string $path): array {
+        if (!file_exists($path)) {
+            throw new \Exception("File: $path does not exist");
+        }
+        
+        $result = parse_ini_file($path);
+        if ($result === false) {
+            throw new \Exception("File: $path is not a valid ini file");
+        }
+        
+        return $result;
         
         $this->_validateConnectionData($keys);
     }
@@ -120,68 +115,64 @@ class phpFolioClient {
     /*
      *  set timeout in seconds
      */ 
-    public function setTimeout(int|float $timeout){
+    public function setTimeout(int|float $timeout): void {
         $this->timeout = $timeout;
     }
 
-    public function getTimeout(){
+    public function getTimeout(): int {
         return $this->timeout;
     }
 
-    public function setVerbose(bool $verbose){
+    public function setVerbose(bool $verbose): void {
         $this->verbose = $verbose;
     }
 
-    public function getLastStatusCode(){
+    public function getLastStatusCode(): int {
         return $this->lastStatusCode;
     }
 
-    public function getStatusCode(){
+    public function getStatusCode(): int {
         return $this->lastStatusCode;
     }
 
-    public function getLastQuery(){
+    public function getLastQuery(): string {
         return $this->lastQuery;
     }
 
-    public function getLastQueryNum(){
+    public function getLastQueryNum(): int {
         return $this->queryNum;
     }
 
-    public function getUrl(){
+    public function getUrl(): string {
         return $this->okapiUrl;
     }
 
-    public function getTenantId(){
+    public function getTenantId(): string {
         return $this->tenant_id;
     }
 
     public function getCentralTenantId(){
-        if(isset($this->central_tenant_id)){
-            return $this->central_tenant_id;
-        }else{
-            return $this->tenant_id;
-        }
+        return $this->central_tenant_id ?? null;
     }
 
-    public function getHostname(){
+    public function getHostname(): string{
         $host = parse_url($this->okapiUrl, PHP_URL_HOST);
         $subdomain = explode(".", $host)[0];
         
         return preg_replace('/^(subdomain|okapi|api|kong)-|-okapi$/', '', $subdomain);
     }
 
-    public function getUsername(){
+    public function getUsername(): string {
         return $this->username;
     }
 
-    public function token(){
-        return substr($this->token,-10) . " | " . substr($this->folioAccessToken,-10);
-    }
+    // public function token(): string{
+    //     return substr($this->token,-10) . " | " . substr($this->folioAccessToken,-10);
+    // }
 
 
     //Helper functions to get some important reference data
-    public function getLocations($tenant_id = null){
+    public function getLocations(string|null $tenant_id = null): array {
         $tenant_id ??= $this->central_tenant_id ?? $this->tenant_id;
         $locations = [];
         foreach($this->getAll('locations','locations',['query'=>'cql.allRecords=1','limit'=>500],null,$tenant_id) as $location){
@@ -190,7 +181,7 @@ class phpFolioClient {
         return $locations;
     }
 
-    public function getLocationCodes($tenant_id = null){
+    public function getLocationCodes(string|null $tenant_id = null): array {
         $tenant_id ??= $this->central_tenant_id ?? $this->tenant_id;
         $locations = [];
         foreach($this->getAll('locations','locations',['query'=>'cql.allRecords=1','limit'=>500],null,$tenant_id) as $location){
@@ -199,7 +190,7 @@ class phpFolioClient {
         return $locations;
     }
 
-    public function getMaterialTypes($tenant_id = null){
+    public function getMaterialTypes(string|null $tenant_id = null): array {
         $tenant_id ??= $this->central_tenant_id ?? $this->tenant_id;
         $mattypes = [];
         foreach($this->getAll('material-types','mtypes',['query'=>'cql.allRecords=1','limit'=>500],null,$tenant_id) as $mattype){
@@ -208,7 +199,7 @@ class phpFolioClient {
         return $mattypes;
     }
 
-    public function getLoanTypes($tenant_id = null){
+    public function getLoanTypes(string|null $tenant_id = null): array {
         $tenant_id ??= $this->central_tenant_id ?? $this->tenant_id;
         $loantypes = [];
         foreach($this->getAll('loan-types','loantypes',['query'=>'cql.allRecords=1','limit'=>500],null,$tenant_id) as $loantype){
@@ -217,7 +208,7 @@ class phpFolioClient {
         return $loantypes;
     }
 
-    public function getDepartments($tenant_id = null){
+    public function getDepartments(string|null $tenant_id = null): array {
         $tenant_id ??= $this->central_tenant_id ?? $this->tenant_id;
         $departments = [];
         foreach($this->getAll('departments','departments',['query'=>'cql.allRecords=1','limit'=>500],null,$tenant_id) as $dept){
@@ -226,7 +217,7 @@ class phpFolioClient {
         return $departments;
     }
 
-    public function getAddressTypes($tenant_id = null){
+    public function getAddressTypes(string|null $tenant_id = null): array {
         $tenant_id ??= $this->central_tenant_id ?? $this->tenant_id;
         $addressTypes = [];
         foreach($this->getAll('addresstypes','addressTypes',['query'=>'cql.allRecords=1','limit'=>500],null,$tenant_id) as $addressType){
@@ -235,7 +226,7 @@ class phpFolioClient {
         return $addressTypes;
     }
 
-    public function getPatronGroups($tenant_id = null){
+    public function getPatronGroups(string|null $tenant_id = null): array {
         $tenant_id ??= $this->central_tenant_id ?? $this->tenant_id;
         $patronGroups = [];
         foreach($this->getAll('groups','usergroups',['query'=>'cql.allRecords=1','limit'=>500],null,$tenant_id) as $patronGroup){
@@ -244,7 +235,7 @@ class phpFolioClient {
         return $patronGroups;
     }
 
-    public function getServicePoints($tenant_id = null){
+    public function getServicePoints(string|null $tenant_id = null): array {
         $tenant_id ??= $this->central_tenant_id ?? $this->tenant_id;
         $servicePoints = [];
         foreach($this->getAll('service-points','servicepoints',['query'=>'cql.allRecords=1','limit'=>500],null,$tenant_id) as $servicePoint){
@@ -253,7 +244,7 @@ class phpFolioClient {
         return $servicePoints;
     }
 
-    public function getModules($tenant_id = null){
+    public function getModules(string|null $tenant_id = null): array {
         $tenant_id ??= $this->central_tenant_id ?? $this->tenant_id;
         $modules = [];
         $r = $this->get("/_/proxy/tenants/$this->tenant_id/modules",['query'=>'cql.allRecords=1','limit'=>500],null,$tenant_id);
@@ -263,7 +254,7 @@ class phpFolioClient {
         return $modules;
     }
 
-    public function getCustomFields($returnNames = false,$tenant_id = null){
+    public function getCustomFields(string|bool $returnNames = false, string|null $tenant_id = null): array|object {
         $tenant_id ??= $this->central_tenant_id ?? $this->tenant_id;
         $modules = $this->getModules($tenant_id);
         $moduleId = '';
@@ -286,6 +277,7 @@ class phpFolioClient {
                 throw new \Exception("getCustomFields: Module not found");
             }
         }
+        throw new \Exception("getCustomFields: No matching modules found");
     }
 
 
@@ -294,7 +286,7 @@ class phpFolioClient {
      * input: $id must be a UUID
      * output: output will be a single record object, not an array of objects
     */
-    public function getOne($endpoint,$id=null,$extraOptions=null,$tenant_id=null,$key = null){
+    public function getOne(string $endpoint,string|null $id=null,array|null $extraOptions=null,string|null $tenant_id=null): object|null {
         $tenant_id ??= $this->central_tenant_id ?? $this->tenant_id;
         $endpoint = trim($endpoint,"/ \t\r\n\0");
         if($id){
@@ -326,7 +318,7 @@ class phpFolioClient {
      *   output: an array of objects (even if a single UUID was passed in)
      * 
     */ 
-    public function get($endpoint,$params=null,$extraOptions=null,$tenant_id = null,$key = null){
+    public function get(string $endpoint,array|object|null $params=null,array|null $extraOptions=null,string|null $tenant_id = null,string|null $key = null): array|object|null {
         $tenant_id ??= $this->central_tenant_id ?? $this->tenant_id;
         $endpoint = trim($endpoint,"/ \t\r\n\0");
         
@@ -351,32 +343,23 @@ class phpFolioClient {
      * 
      * All input rules that apply to 'get' apply to this method as well
      */
-    public function getAll($endpoint,$key = '',$params=null,$extraOptions=null,$tenant_id = null){
+    public function getAll(string $endpoint,string $key = '',array|object|null $params=null,array|null $extraOptions=null,string|null $tenant_id = null): object|array|null {
         $tenant_id ??= $this->central_tenant_id ?? $this->tenant_id;
         $endpoint = trim($endpoint,"/ \t\r\n\0");
         $options = $this->_setOptions($extraOptions,$tenant_id);
 
-        switch (gettype($params)){
-            case 'object':
-                $p = (array) $params;
-                break;
-            case 'array':
-                $p = $params;
-                break;
-            case 'string':
-                if($this->_isJson($params)){
-                    $p = json_decode($params, true);
-                }else{
-                    throw new \Exception("Cannot use string query for getAll");
-                }
-                break;
-            default:
-                $p = [];
-        }
+        $p = match (gettype($params)) {
+            'object' => (array) $params,
+            'array' => $params,
+            'string' => $this->_isJson($params) 
+            ? json_decode($params, true) 
+            : throw new \Exception("Cannot use string query for getAll"),
+            default => [],
+        };
         
-        $p['limit'] = (isset($p['limit']) && $p['limit'] > 0) ? $p['limit'] : $this->getAllDefaultLimit;
+        $p['limit'] = ($p['limit'] ?? 0) > 0 ? $p['limit'] : $this->getAllDefaultLimit;
         $p['offset'] = $p['offset'] ?? 0;
-        $p['query'] = (isset($p['query'])) ? $p['query'] . " sortBy id" : 'cql.allRecords=1 sortBy id';
+        $p['query'] = ($p['query'] ?? 'cql.allRecords=1') . ' sortBy id';
         
         do{
             if(time() > $this->ATrenew){
@@ -397,36 +380,27 @@ class phpFolioClient {
         }while(true);
     }
 
-    public function getAll_by_id_offset($endpoint, $key = '', $params = null, $extraOptions = null, $tenant_id = null){
+    public function getAll_by_id_offset(string $endpoint,string $key = '',array|object|null $params = null,array|null $extraOptions = null,string|null $tenant_id = null): object|array|null{
         $tenant_id ??= $this->central_tenant_id ?? $this->tenant_id;
         $endpoint = trim($endpoint, "/ \t\r\n\0");
         $options = $this->_setOptions($extraOptions, $tenant_id);
 
-        switch (gettype($params)){
-            case 'object':
-                $p = (array) $params;
-                break;
-            case 'array':
-                $p = $params;
-                break;
-            case 'string':
-                if($this->_isJson($params)){
-                    $p = json_decode($params, true);
-                }else{
-                    throw new \Exception("Cannot use string query for getAll_by_id_offset");
-                }
-                break;
-            default:
-                $p = [];
-        }
+        $p = match (gettype($params)) {
+            'object' => (array) $params,
+            'array' => $params,
+            'string' => $this->_isJson($params) 
+            ? json_decode($params, true) 
+            : throw new \Exception("Cannot use string query for getAll_by_id_offset"),
+            default => [],
+        };
 
         if(time() > $this->ATrenew){
             $this->connect(true);
             $options['headers']['x-okapi-token'] = $this->token;
         }
-        $p['limit'] = (isset($p['limit']) && $p['limit'] > 0) ? $p['limit'] : $this->getAllDefaultLimit;
+        $p['limit'] = ($p['limit'] ?? 0) > 0 ? $p['limit'] : $this->getAllDefaultLimit;
         $p['offset'] = $p['offset'] ?? 0;
-        $p['query'] = (isset($p['query'])) ? $p['query'] . " sortBy id" : 'cql.allRecords=1 sortBy id';
+        $p['query'] = ($p['query'] ?? 'cql.allRecords=1') . ' sortBy id';
 
         // get initial batch of records
         $origQuery = $p['query'];
@@ -460,7 +434,7 @@ class phpFolioClient {
         }
     }
 
-    public function post($endpoint, $params = null, $extraOptions = null, $tenant_id = null){
+    public function post(string $endpoint,array|object|null $params = null,array|null $extraOptions = null,string|null $tenant_id = null): object|array|null {
         $tenant_id ??= $this->central_tenant_id ?? $this->tenant_id;
         
         if(is_object($params)){
@@ -482,7 +456,7 @@ class phpFolioClient {
         }
     }
 
-    public function put($endpoint, $id, $params, $extraOptions = null, $tenant_id = null){
+    public function put(string $endpoint,string $id,array|object|null $params, array|null $extraOptions = null, string|null $tenant_id = null): object|array|null {
         $tenant_id ??= $this->central_tenant_id ?? $this->tenant_id;
         
         if(is_object($params)){
@@ -505,7 +479,7 @@ class phpFolioClient {
         }
     }
 
-    public function patch($endpoint, $id, $params, $extraOptions = null, $tenant_id = null){
+    public function patch(string $endpoint,string|null $id,array|object|null $params,array|null $extraOptions = null,string|null $tenant_id = null): array|object|null {
         $tenant_id ??= $this->central_tenant_id ?? $this->tenant_id;
         
         if(is_object($params)){
@@ -529,7 +503,7 @@ class phpFolioClient {
         }
     }
     
-    public function delete($endpoint, $id = null, $params = null, $extraOptions = null, $tenant_id = null){
+    public function delete(string $endpoint,string|null $id = null,array|object|null  $params = null,array|null $extraOptions = null,string|null $tenant_id = null): array|object|null {
         $tenant_id ??= $this->central_tenant_id ?? $this->tenant_id;
         $endpoint = trim($endpoint, "/ \t\r\n\0");
         
@@ -558,13 +532,11 @@ class phpFolioClient {
     }
 
     #data export methods
-    public function putFile($endpoint,$filename,$tenant_id = null){
+    public function putFile(string $endpoint,string $filename,string|null $tenant_id = null): array|object|null{
         $tenant_id ??= $this->central_tenant_id ?? $this->tenant_id;
         try{
             $endpoint = trim($endpoint,"/ \t\r\n\0");
-            if(!isset($tenant_id)){
-                $tenant_id = $this->tenant_id;
-            }
+            $tenant_id ??= $this->tenant_id;
             if(file_exists($filename)){
                 $options = [
                     'headers' => [
@@ -597,7 +569,7 @@ class phpFolioClient {
     }
 
     // alias of putField
-    public function postFile($endpoint,$filePath,$tenant_id=null){
+    public function postFile(string $endpoint,string $filePath,string|null $tenant_id=null): array|object|null{
         try{
             return $this->putFile($endpoint,$filePath,$tenant_id=null);
         }catch(\Exception $e){
@@ -605,7 +577,7 @@ class phpFolioClient {
         }
     }
 
-    public function getFile($filename,$url,$tenant_id){
+    public function getFile(string $filename,string $url,string|null $tenant_id=null): void {
         try{
             $fh = fopen($filename,'w');
             if($fh){
@@ -627,7 +599,7 @@ class phpFolioClient {
         }
     }
 
-    function dataExport($filename,$exportProfileName = 'Default instances export job profile',$out_Path = '',$tenant_id = null){
+    function dataExport(string $filename,string $exportProfileName = 'Default instances export job profile',string $out_Path = '',string|null $tenant_id = null): array|object|null {
         // https://folio-org.atlassian.net/browse/UXPROD-2330
         $tenant_id ??= $this->central_tenant_id ?? $this->tenant_id;       
 
@@ -714,7 +686,7 @@ class phpFolioClient {
         }
     }
 
-    public function dataExportAll($exportProfileName = 'Default instances export job profile',$out_Path = '',$includeDeleted = false,$includeSuppressed = false,$tenant_id = null){
+    public function dataExportAll(string $exportProfileName = 'Default instances export job profile',string $out_Path = '',bool $includeDeleted = false,bool $includeSuppressed = false,string|null $tenant_id = null): array|object|null {
         try{
             // step 1 - get export profile id
             $profile=$this->get('/data-export/job-profiles',['query'=>'name=="' . $exportProfileName . '"'],null,$tenant_id);
@@ -801,37 +773,26 @@ class phpFolioClient {
                 throw new \Exception("Export all failed");
             }
         }catch(\Exception $e){
-            return "Export all exception: " . $e->getMessage();
+            throw new \Exception("Export all exception: " . $e->getMessage());
         }
     }
     
     #utility functions
-    private function _handleParameters($params){
-        switch (gettype($params)){
-            case 'object':
-                $p = (array) $params;
-            case 'array':
-                $p = '?' . http_build_query($params);
-                break;
-            case 'string';
-                if($this->_isJson($params)){
-                    $p = json_decode($params);
-                }elseif($this->_isValidUuid($params)){
-                    $p = '?' . http_build_query(['query'=>'id="' . $params . '"']);
-                }else{
-                    $p = "?$params";
-                }
-                break;
-            default:
-                $p = null;
-        }
-        return $p;
+    private function _handleParameters(array|null $params):string|array|null {
+        return match (gettype($params)) {
+            'object' => '?' . http_build_query((array) $params),
+            'array' => '?' . http_build_query($params),
+            'string' => $this->_isJson($params)
+            ? json_decode($params)
+            : ($this->_isValidUuid($params)
+                ? '?' . http_build_query(['query' => 'id="' . $params . '"'])
+                : "?$params"),
+            default => null,
+        };
     }
 
-    private function _setOptions($extraOptions = null,$tenant_id = null){
-        if(!isset($tenant_id)){
-            $tenant_id = $this->tenant_id;
-        }
+    private function _setOptions(array|null $extraOptions = null,string|null $tenant_id = null): array|null{
+        $tenant_id ??= $this->tenant_id;
         $options = [
             'headers' => [
                 'Accept' => 'application/json',
@@ -848,14 +809,14 @@ class phpFolioClient {
         return $options;
     }
 
-    private function _isValidUuid(string $uuid ) {
+    private function _isValidUuid(string $uuid ): bool {
         if (!is_string($uuid) || (preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[4-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/', $uuid) !== 1)) {
             return false;
         }
         return true;
     }
 
-    private function _isJson(string|null $string) {
+    private function _isJson(string|null $string): bool {
         if($string){
             json_decode($string);
             return json_last_error() === JSON_ERROR_NONE;
@@ -864,14 +825,14 @@ class phpFolioClient {
         }
      }
 
-    public function __debugInfo(){
+    public function __debugInfo(): array {
         $vars = get_object_vars($this);
         unset($vars['password'],$vars['token'],$vars['folioRefreshToken'],$vars['folioAccessToken']);
         return $vars;
     }
 
     #this method does most of the real work
-    private function _request($verb, $endpoint, $params = null, $options = null){
+    private function _request(string $verb, string $endpoint, string|array|object|null $params = null,array|object|null $options = null): mixed {
         $try = 0;
         $prevTimeout = $this->timeout;
 
@@ -927,7 +888,7 @@ class phpFolioClient {
         }
     }
 
-    private function _logResponse($response, $contents, $verb){
+    private function _logResponse(object $response, string|null $contents, string $verb): void {
         if($this->logPath){
             $now = new \DateTime();
             fwrite($this->logFh, "Response $this->queryNum:\t" . $response->getStatusCode() . ' / ' . $response->getReasonPhrase() . "\t" . $now->format("Y-m-d H:i:s.u") . PHP_EOL);
@@ -939,7 +900,7 @@ class phpFolioClient {
     }
 
     #exception methods
-    private function _handleClientException($e){
+    private function _handleClientException(object $e): void {
         if($e->hasResponse()){
             $response = $e->getResponse();
             $statusCode = $response->getStatusCode();
@@ -958,7 +919,7 @@ class phpFolioClient {
         throw new \Exception("Unspecified request error");
     }
 
-    private function _handleServerException($e){
+    private function _handleServerException(object $e): void {
         if($e->hasResponse()){
             $response = $e->getResponse();
             $this->lastStatusCode = $response->getStatusCode();
@@ -973,7 +934,7 @@ class phpFolioClient {
         throw new \Exception("Unspecified request error");
     }
 
-    private function _handleConnectException($e, &$try, $prevTimeout){
+    private function _handleConnectException(object $e,int &$try,int $prevTimeout): void {
         if($this->timeout > 0 && $try < $this->maxRetries){
             $try++;
             $this->timeout = round(($prevTimeout * 1.5) * 100) / 100;
@@ -983,16 +944,12 @@ class phpFolioClient {
     }
 
     #connection methods
-    public function connect($force = false){
+    public function connect(bool $force = false): void {
         ($this->verbose) ? print "  " . $this->ATrenew . " / " .($this->ATrenew - time()) . PHP_EOL : '';
 
-        if(isset($this->authFlavor )){
-            if($this->authFlavor == "LEGACY"){
+        if (isset($this->authFlavor)) {
+            if ($this->authFlavor === "LEGACY" || (!$force && time() < $this->ATrenew)) {
                 return;
-            }else{
-                if(!$force && (time() < $this->ATrenew)){
-                    return;
-                }
             }
         }
         $statusCode = $this->_rtrConnect($force);
@@ -1007,7 +964,7 @@ class phpFolioClient {
     }
 
 
-    private function _connectOptions(){
+    private function _connectOptions(): array {
         if(isset($this->central_tenant_id)){
             $tenant = $this->central_tenant_id;
         }else{
@@ -1026,7 +983,7 @@ class phpFolioClient {
             ];
     }
 
-    private function _legacyConnect(){
+    private function _legacyConnect(): int {
         try{
             $client = new Client(['base_uri' => $this->okapiUrl,'connect_timeout'=>30,
                                 'read_timeout'=>30,'timeout'=>30,'verify'=>$this->sslVerify,
@@ -1053,7 +1010,7 @@ class phpFolioClient {
         }
     }
 
-    private function _rtrConnect($force = false){
+    private function _rtrConnect(): int {
         try{
             $jar = new CookieJar();
             $client = new Client([
@@ -1097,7 +1054,7 @@ class phpFolioClient {
         }
     }
 
-    private function _validateConnectionData($connection){
+    private function _validateConnectionData(): void {
         $required = ['okapiUrl','tenant_id','username','password'];
 
         foreach($required as $key){

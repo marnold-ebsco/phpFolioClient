@@ -2,6 +2,7 @@
     <testsuites>
         <testsuite name="My Project Tests">
             <directory>tests</directory>
+            <exclude>tests/test.php</exclude>
         </testsuite>
     </testsuites>
 </phpunit>

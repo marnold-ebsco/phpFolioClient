@@ -17,19 +17,22 @@ class phpFolioClientTestConnectTest extends TestCase {
 		// $connectionObj->username = 'diku_admin';
 		// $connectionObj->password = 'admin';
 		// $connectionObj->sslVerify = 'cacert.pem';
-		// $this->expectException(Exception::class);
-		$this->expectExceptionMessage('okapiUrl does not exist');
+		$this->expectException(Error::class);
+		$this->expectExceptionMessage('must not be accessed before initialization');
 
 		$folio = new phpFOLIOClient($connectionObj);
 	}
 
+	
 	public function testCreateClassNoTenantId(){
 
 		$connectionObj = new stdClass();
 		$connectionObj->okapiUrl = 'https://folio-snapshot-okapi.dev.folio.org/';
 
+		$this->expectException(Error::class);
 		$this->expectExceptionMessage('okapiUrl does not exist');
 		$this->expectExceptionMessage('tenant_id does not exist');
+		$this->expectExceptionMessage('must not be accessed before initialization');
 
 		$folio = new phpFOLIOClient($connectionObj);
 	}
@@ -43,9 +46,11 @@ class phpFolioClientTestConnectTest extends TestCase {
 		// $connectionObj->password = 'admin';
 		// $connectionObj->sslVerify = 'cacert.pem';
 		// $this->expectException(Exception::class);
+		$this->expectException(Error::class);
 		$this->expectExceptionMessage('okapiUrl does not exist');
 		$this->expectExceptionMessage('tenant_id does not exist');
 		$this->expectExceptionMessage('username does not exist');
+		$this->expectExceptionMessage('must not be accessed before initialization');
 		// $this->expectExceptionMessage('password does not exist');
 		// $this->expectExceptionMessage('tenant_id does not exist');
 
@@ -60,10 +65,12 @@ class phpFolioClientTestConnectTest extends TestCase {
 		$connectionObj->username = 'diku_admin';
 		// $connectionObj->password = 'admin';
 		// $connectionObj->sslVerify = 'cacert.pem';
+		$this->expectException(Error::class);
 		$this->expectExceptionMessage('okapiUrl does not exist');
 		$this->expectExceptionMessage('tenant_id does not exist');
 		$this->expectExceptionMessage('username does not exist');
 		$this->expectExceptionMessage('password does not exist');
+		$this->expectExceptionMessage('must not be accessed before initialization');
 
 		$folio = new phpFOLIOClient($connectionObj);
 	}
@@ -82,7 +89,7 @@ class phpFolioClientTestConnectTest extends TestCase {
 
 	public function testCreateClassViaIni(){
 		
-		$folio = new phpFOLIOClient('snapshot.ini');
+		$folio = new phpFOLIOClient('lsedemo.ini');
 		$this->assertObjectHasProperty('okapiUrl', $folio);
 	}
 

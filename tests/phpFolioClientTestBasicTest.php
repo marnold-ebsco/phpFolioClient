@@ -16,7 +16,7 @@ class phpFolioClientTestBasicTest extends TestCase {
 	{
 		// Code here runs once before any test in this class
 		// e.g., establishing a database connection, loading a large dataset
-		self::$folio = new phpFOLIOClient('snapshot.ini');
+		self::$folio = new phpFOLIOClient('lsedemo.ini');
 	}
 
 	protected function setUp(): void
