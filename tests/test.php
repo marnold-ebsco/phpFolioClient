@@ -102,6 +102,25 @@ try{
 }
 
 try{
+    print "Testing GET ALL BY OFFSET with query\n";
+    $begin=microtime(true);
+    $count = 0;
+    $limit = 10000;
+    foreach($folio->getAll_by_id_offset('instance-storage/instances','instances',['query'=>'source==MARC','limit'=>$limit]) as $instance){        
+        // print $instance . PHP_EOL;
+        if(($count % $limit) == 0){
+            print "Count: $count\r";
+        }
+        $count++;
+    }
+    print "Count: $count\n";
+}catch(Exception $e){
+    print "  Exception: " . $e->getMessage() . PHP_EOL;
+}finally{
+    print "Elapsed time: " . number_format((microtime(true) - $begin),2) . " seconds.\n\n";
+}
+
+try{
     print "testing GET/INSERT/UPDATE/DELETE\n";
     $begin=microtime(true);
 
