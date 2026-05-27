@@ -1,9 +1,11 @@
 <phpunit colors="true" bootstrap="vendor/autoload.php" displayDetailsOnTestsThatTriggerWarnings="true">
-    <testsuites>
-        <testsuite name="My Project Tests">
+    <source>
+        <include>
             <directory>tests</directory>
-            <exclude>tests/test.php</exclude>
-        </testsuite>
-    </testsuites>
+        </include>
+        <exclude>
+            <file>tests/test.php</file>
+        </exclude>
+    </source>
 </phpunit>
 
