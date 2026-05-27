@@ -24,10 +24,6 @@ class phpFolioClientTestBasicTest extends TestCase {
 		// $this->folio = new phpFOLIOClient('lsedemo.ini');
 	}
 
-	public function testCreateClassNoUrl(){
-		$this->assertObjectHasProperty('okapiUrl', self::$folio);
-	}
-
 	public function testGetLocations(){
 		$response = self::$folio->getLocations();
 		
@@ -40,7 +36,6 @@ class phpFolioClientTestBasicTest extends TestCase {
 		foreach(self::$folio->getAll('locations','locations',['query'=>'cql.allRecords=1','limit'=>500]) as $loc){
 			$count++;
 		}
-		print $response->totalRecords . " / $count\n";
 		
 		$this->assertGreaterThan(0, $count);
 		$this->assertEquals($response->totalRecords,$count);
@@ -52,7 +47,6 @@ class phpFolioClientTestBasicTest extends TestCase {
 		foreach(self::$folio->getAll_by_id_offset('locations','locations',['query'=>'cql.allRecords=1','limit'=>2]) as $loc){
 			$count++;
 		}
-		print $response->totalRecords . " / $count\n";
 		$this->assertGreaterThan(0, $count);
 		$this->assertEquals($response->totalRecords,$count);
 	}

@@ -1,5 +1,5 @@
 <?php
-require_once('../vendor/autoload.php');
+require_once('vendor/autoload.php');
 
 use phpFolioClient\phpFolioClient;
 
@@ -43,6 +43,8 @@ try{
     print "Central tenant id: " . $folio->getCentralTenantId() . PHP_EOL;
     print "Username: " . $folio->getUsername() . PHP_EOL;
     print "Timeout: $timeout\n";
+    print "sslVerify: " . $folio->getSslVerify() . PHP_EOL;
+
 
 }catch(Exception $e){
     print "  Exception: " . $e->getMessage() . PHP_EOL;

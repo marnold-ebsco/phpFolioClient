@@ -30,7 +30,7 @@ class phpFolioClient {
     private string $password;
     // https://docs.guzzlephp.org/en/stable/request-options.html#verify-option
     // private $sslVerify = 'src/folio/cacert.pem';
-    private string|bool $sslVerify = true;  //uses default certificates
+    private string|bool $sslVerify;
     private string $name;
 
     private string|bool $logPath = false;
@@ -42,6 +42,7 @@ class phpFolioClient {
     private int $maxRetries = 5;
     private int $getAllDefaultLimit = 5000;
     private string $authFlavor;
+    private bool $debug = false;
 
     private bool $verbose = false;
 
@@ -68,6 +69,17 @@ class phpFolioClient {
         $this->logPath = $logPath;
 
         $this->_initializeConnection($connection);
+
+        // fix sslVerify variable
+        if (strcasecmp($this->sslVerify, 'true') === 0) {
+            $this->sslVerify = true;
+        } elseif (strcasecmp($this->sslVerify, 'false') === 0) {
+            $this->sslVerify = false;
+            print "Caution: setting sslVerify to false should only be used for development work!\n";
+        }
+        // Otherwise leave as string (e.g., path to certificate)
+        
+
         $this->connect();
         $this->okapiUrl = trim($this->okapiUrl, "/");
 
@@ -94,9 +106,11 @@ class phpFolioClient {
             $this->$key = $value;
             $keys[] = $key;
         }
-        }
 
-        private function _parseConnectionFile(string $path): array {
+        $this->_validateConnectionData($keys);
+    }
+
+    private function _parseConnectionFile(string $path): array {
         if (!file_exists($path)) {
             throw new \Exception("File: $path does not exist");
         }
@@ -107,8 +121,6 @@ class phpFolioClient {
         }
         
         return $result;
-        
-        $this->_validateConnectionData($keys);
     }
 
     #configuration/information methods
@@ -123,8 +135,22 @@ class phpFolioClient {
         return $this->timeout;
     }
 
+    public function getSslVerify(){
+        if (is_string($this->sslVerify)) {
+            return $this->sslVerify;
+        } elseif (is_bool($this->sslVerify)) {
+            // Returns "true" for true and "false" for false
+            return $this->sslVerify ? 'true' : 'false';
+        }
+        return ''; // Default fallback
+    }
+
     public function setVerbose(bool $verbose): void {
         $this->verbose = $verbose;
+    }
+
+    public function getFlavor(){
+        return $this->authFlavor;
     }
 
     public function getLastStatusCode(): int {
@@ -987,7 +1013,7 @@ class phpFolioClient {
         try{
             $client = new Client(['base_uri' => $this->okapiUrl,'connect_timeout'=>30,
                                 'read_timeout'=>30,'timeout'=>30,'verify'=>$this->sslVerify,
-                                'debug'=>false, 'cookies'=>false]);
+                                'debug'=>$this->debug, 'cookies'=>false]);
             $response = $client->request('POST','/authn/login',$this->_connectOptions());
             if ($response) {
                 if(intval($response->getStatusCode()) == 201){
@@ -1019,7 +1045,7 @@ class phpFolioClient {
                 'read_timeout' => 30,
                 'timeout' => 30,
                 'verify' => $this->sslVerify,
-                'debug' => false,
+                'debug' => $this->debug,
                 'cookies' => $jar
             ]);
 
