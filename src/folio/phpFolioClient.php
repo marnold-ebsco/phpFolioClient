@@ -33,8 +33,8 @@ class phpFolioClient {
     private string|bool $sslVerify;
     private string $name;
 
-    private string|bool $logPath = false;
-    private string $logFh;
+    private mixed $logPath = false;
+    private mixed $logFh;
     private int $queryNum = 1;
     private int $lastStatusCode;
     private string $lastQuery;
@@ -63,7 +63,7 @@ class phpFolioClient {
      *
      *   if you include a logPath, a query log will be created
      */
-    public function __construct($connection, $verbose = false, $logPath = false){
+    public function __construct(mixed $connection, bool $verbose = false,mixed $logPath = false){
         $this->ATrenew = null;
         $this->verbose = $verbose;
         $this->logPath = $logPath;
