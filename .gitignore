@@ -5,3 +5,4 @@ composer.lock
 folioLog.txt
 fileExportTest.csv
 lsedemo.ini
+.phpunit.result.cache
