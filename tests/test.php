@@ -6,7 +6,7 @@ use phpFolioClient\phpFolioClient;
 $hostname = 'lsedemo';
 
 try{
-    $folio = new phpFolioClient($hostname . ".ini");
+    $folio = new phpFolioClient($hostname . ".ini",false,'folioClientLog.txt');
 }catch(Exception $e){
     print "Error: " . $e->getMessage();
     exit;
