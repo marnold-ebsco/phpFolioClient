@@ -12,6 +12,15 @@ try{
     exit;
 }
 
+$shortopts = "a";
+$options = getopt($shortopts);
+$isAbbreviated = isset($options['a']);
+if($isAbbreviated){
+    $doExportTests = false;
+    print "Running abbreviated tests\n";
+}
+
+
 // export tests take some time, but they exercise the postFile and getFile methods
 $doExportTests = false;
 
@@ -93,79 +102,81 @@ try{
     print "Elapsed time: " . number_format((microtime(true) - $begin),2) . " seconds.\n\n";
 }
 
-try{
-    print "Testing GET ALL\n";
-    $begin=microtime(true);
-    $limit = 10000;
-    $count = 0;
-    foreach($folio->getAll('instance-storage/instances','instances',['query'=>'cql.allRecords=1','limit'=>$limit]) as $instance){        
-        if(($count % $limit) == 0){
-            print "Count: $count\r";
+if(!$isAbbreviated){
+    try{
+        print "Testing GET ALL\n";
+        $begin=microtime(true);
+        $limit = 10000;
+        $count = 0;
+        foreach($folio->getAll('instance-storage/instances','instances',['query'=>'cql.allRecords=1','limit'=>$limit]) as $instance){        
+            if(($count % $limit) == 0){
+                print "Count: $count\r";
+            }
+            $count++;
         }
-        $count++;
+        print "Count: $count\n";
+    }catch(Exception $e){
+        print "  Exception: " . $e->getMessage() . PHP_EOL;
+    }finally{
+        print "Elapsed time: " . number_format((microtime(true) - $begin),2) . " seconds.\n\n";
     }
-    print "Count: $count\n";
-}catch(Exception $e){
-    print "  Exception: " . $e->getMessage() . PHP_EOL;
-}finally{
-    print "Elapsed time: " . number_format((microtime(true) - $begin),2) . " seconds.\n\n";
-}
 
-try{
-    print "Testing GET ALL BY OFFSET\n";
-    $begin=microtime(true);
-    $count = 0;
-    $limit = 10000;
-    foreach($folio->getAll_by_id_offset('instance-storage/instances','instances',['query'=>'cql.allRecords=1','limit'=>$limit]) as $instance){        
-        // print $instance . PHP_EOL;
-        if(($count % $limit) == 0){
-            print "Count: $count\r";
+    try{
+        print "Testing GET ALL BY OFFSET\n";
+        $begin=microtime(true);
+        $count = 0;
+        $limit = 10000;
+        foreach($folio->getAll_by_id_offset('instance-storage/instances','instances',['query'=>'cql.allRecords=1','limit'=>$limit]) as $instance){        
+            // print $instance . PHP_EOL;
+            if(($count % $limit) == 0){
+                print "Count: $count\r";
+            }
+            $count++;
         }
-        $count++;
+        print "Count: $count\n";
+    }catch(Exception $e){
+        print "  Exception: " . $e->getMessage() . PHP_EOL;
+    }finally{
+        print "Elapsed time: " . number_format((microtime(true) - $begin),2) . " seconds.\n\n";
     }
-    print "Count: $count\n";
-}catch(Exception $e){
-    print "  Exception: " . $e->getMessage() . PHP_EOL;
-}finally{
-    print "Elapsed time: " . number_format((microtime(true) - $begin),2) . " seconds.\n\n";
-}
 
-try{
-    print "Testing GET ALL with query\n";
-    $begin=microtime(true);
-    $limit = 10000;
-    $count = 0;
-    foreach($folio->getAll('instance-storage/instances','instances',['query'=>'source==MARC','limit'=>$limit]) as $instance){        
-        if(($count % $limit) == 0){
-            print "Count: $count\r";
+    try{
+        print "Testing GET ALL with query\n";
+        $begin=microtime(true);
+        $limit = 10000;
+        $count = 0;
+        foreach($folio->getAll('instance-storage/instances','instances',['query'=>'source==MARC','limit'=>$limit]) as $instance){        
+            if(($count % $limit) == 0){
+                print "Count: $count\r";
+            }
+            $count++;
         }
-        $count++;
+        print "Count: $count\n";
+    }catch(Exception $e){
+        print "  Exception: " . $e->getMessage() . PHP_EOL;
+    }finally{
+        print "Elapsed time: " . number_format((microtime(true) - $begin),2) . " seconds.\n\n";
     }
-    print "Count: $count\n";
-}catch(Exception $e){
-    print "  Exception: " . $e->getMessage() . PHP_EOL;
-}finally{
-    print "Elapsed time: " . number_format((microtime(true) - $begin),2) . " seconds.\n\n";
-}
 
 
-try{
-    print "Testing GET ALL BY OFFSET with query\n";
-    $begin=microtime(true);
-    $count = 0;
-    $limit = 10000;
-    foreach($folio->getAll_by_id_offset('instance-storage/instances','instances',['query'=>'source==MARC','limit'=>$limit]) as $instance){        
-        // print $instance . PHP_EOL;
-        if(($count % $limit) == 0){
-            print "Count: $count\r";
+    try{
+        print "Testing GET ALL BY OFFSET with query\n";
+        $begin=microtime(true);
+        $count = 0;
+        $limit = 10000;
+        foreach($folio->getAll_by_id_offset('instance-storage/instances','instances',['query'=>'source==MARC','limit'=>$limit]) as $instance){        
+            // print $instance . PHP_EOL;
+            if(($count % $limit) == 0){
+                print "Count: $count\r";
+            }
+            $count++;
         }
-        $count++;
+        print "Count: $count\n";
+    }catch(Exception $e){
+        print "  Exception: " . $e->getMessage() . PHP_EOL;
+    }finally{
+        print "Elapsed time: " . number_format((microtime(true) - $begin),2) . " seconds.\n\n";
     }
-    print "Count: $count\n";
-}catch(Exception $e){
-    print "  Exception: " . $e->getMessage() . PHP_EOL;
-}finally{
-    print "Elapsed time: " . number_format((microtime(true) - $begin),2) . " seconds.\n\n";
 }
 
 try{
