@@ -10,7 +10,11 @@
     },
 	"autoload": {
         "psr-4": {
-            "phpFolioClient\\": "src/folio/"
+            "phpFolioClient\\": "src/folio/",
+            "FolioConfig\\": "src/folio/",
+            "FolioAuth\\": "src/folio/",
+            "FolioLogger\\": "src/folio/",
+            "FolioClient\\": "src/folio/"
         },
         "classmap": [
             "src/"

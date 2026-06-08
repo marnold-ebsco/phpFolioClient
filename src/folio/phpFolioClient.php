@@ -885,7 +885,8 @@ class phpFolioClient {
                 $this->lastStatusCode = $response->getStatusCode();
                 
                 return json_decode($contents, false);
-                
+            }catch (RequestException $e){
+                $this->_handleClientException($e);
             }catch (ClientException $e){
                 $this->_handleClientException($e);
                 $try = $this->maxRetries;
@@ -1006,7 +1007,7 @@ class phpFolioClient {
                 'Accept' => 'application/json',
                 'Content-Type' => 'application/json',
             ]
-            ];
+        ];
     }
 
     private function _legacyConnect(): int {
