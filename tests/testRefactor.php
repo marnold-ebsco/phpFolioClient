@@ -21,17 +21,62 @@ try{
     print "Exception: " . $e->getMessage() . PHP_EOL;
 }
 
-print"GET\n";
-// print_r($folio->get('locations'));
-
-print"GET with key\n";
-foreach($folio->get('locations',null,key: 'locations') as $value){
+print"GET ALL\n";
+$count = 0;
+$scriptBegin=microtime(true);
+foreach($folio->getAll('instance-storage/instances',['limit'=>5000]) as $value){
     // print_r($value);
+    $count++;
+}
+print "count: $count\n";
+print "Elapsed time: " . number_format((microtime(true) - $scriptBegin),2) . " seconds.\n\n";
+
+print"GET ALL with loop\n";
+$count = 0;
+$scriptBegin=microtime(true);
+foreach($folio->getAll_loop('instance-storage/instances',['limit'=>5000]) as $value){
+    // print_r($value);
+    $count++;
+}
+print "count: $count\n";
+print "Elapsed time: " . number_format((microtime(true) - $scriptBegin),2) . " seconds.\n\n";
+
+
+$count = 0;
+$scriptBegin=microtime(true);
+print"GET with implicit key\n";
+foreach($folio->get('instance-storage/instances') as $value){
+    // print_r($value);
+    $count++;
+}
+print "count: $count\n";
+print "Elapsed time: " . number_format((microtime(true) - $scriptBegin),2) . " seconds.\n\n";
+
+exit;
+
+print"GET Full Object\n";
+print_r($folio->get('locations',['limit'=>5],FolioClient::RETURN_FULL_OBJECT));
+
+print"GET with implicit key\n";
+foreach($folio->get('locations') as $value){
+    print_r($value);
 }
 
+print"GET with explicit key\n";
+foreach($folio->get('locations',['limit'=>5],key: 'locations') as $value){
+    print_r($value);
+}
+
+print"GET One\n";
+print_r($folio->getOne('locations','094cf617-8114-457c-a4f9-7b9a546d6344'));
+exit;
+
 print"GETEACH\n";
-foreach($folio->getEach('locations',null,key: 'locations') as $value){
-    // print_r($value);
+$count= 0;
+foreach($folio->getEach('locations','locations',['limit'=>10]) as $value){
+    print "Count $count\n";
+    print_r($value);
+    $count++;
 }
 
 
