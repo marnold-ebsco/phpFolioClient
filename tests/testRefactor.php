@@ -5,21 +5,54 @@ use phpFolioClient\FolioConfig;
 use phpFolioClient\FolioAuth;
 use phpFolioClient\FolioLogger;
 use phpFolioClient\FolioClient;
+use phpFolioClient\FolioUtils;
 use phpFolioClient\phpFolioClient;
 
 $hostname = 'lsedemo';
 
 
 $config = new FolioConfig($hostname . ".ini");
+
 $logger = new FolioLogger('folioClientLog.txt');
+$utils = new FolioUtils();
 
 try{
     $auth = new FolioAuth($config);
     $auth->getAccessToken();
-    $folio = new FolioClient($config,$auth,$logger);
+    $folio = new FolioClient($config,$auth,$utils,$logger);
 }catch(Exception $e){
     print "Exception: " . $e->getMessage() . PHP_EOL;
 }
+
+
+print"authFlavor: " . $folio->getAuthFlavor() . PHP_EOL;
+print"status code: ";
+$folio->get('locations');
+print $folio->getLastStatusCode() . PHP_EOL;
+print"status code: ";
+print $folio->getStatusCode() . PHP_EOL;
+
+print"last query: ";
+print $folio->getLastQuery() . PHP_EOL;
+
+print"last query number: ";
+print $folio->getLastQueryNum() . PHP_EOL;
+
+print"get api url: ";
+print $folio->getUrl() . PHP_EOL;
+
+print"get tenant id: ";
+print $folio->getTenantId() . PHP_EOL;
+
+print"get central tenant id: ";
+print $folio->getCentralTenantId() . PHP_EOL;
+
+print"get hostname: ";
+print $folio->getHostname() . PHP_EOL;
+
+print"get username: ";
+print $folio->getUsername() . PHP_EOL;
+exit;
 
 try{
     $begin=microtime(true);

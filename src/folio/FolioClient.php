@@ -9,14 +9,24 @@ use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\ServerException;
 use stdClass;
 
+/* stuff left to do
+    data export
+    data export all
+    data import
+    convenience functions
+
+ */
+
+
 class FolioClient {
     public const RETURN_FULL_OBJECT = -1;
     private FolioConfig $config;
     private FolioAuth $auth;
     private FolioLogger $logger;
     private Client $httpClient;
+    private FolioUtils $folioUtils;
 
-    private int $queryNum = 1;
+    private int $queryNum = 0;
     private int $lastStatusCode;
     private string $lastQuery = '';
     private ?string $central_tenant_id = null;
@@ -26,11 +36,13 @@ class FolioClient {
     public function __construct(
         FolioConfig $config,
         FolioAuth $auth,
+        FolioUtils $folioUtils,
         FolioLogger $logger,
         ?Client $httpClient = null
     ) {
         $this->config = $config;
         $this->auth = $auth;
+        $this->folioUtils = $folioUtils;
         $this->logger = $logger;
 
         $this->httpClient = $httpClient ?: new Client([
@@ -55,7 +67,7 @@ class FolioClient {
     }
 
     public function getOne(string $endpoint, string $id, ?string $tenant_id = null): null|stdClass {
-        if($this->_isValidUuid($id)){
+        if($this->folioUtils->isValidUuid($id)){
             $response = $this->get("$endpoint/$id",null,null,self::RETURN_FULL_OBJECT,$tenant_id);
             return $response;
         }else{
@@ -229,21 +241,12 @@ class FolioClient {
         );
     }
 
-    // info functions
-    public function getLastQuery(){
-        return $this->lastQuery;
-    }
-
-    public function getLastStatusCode(){
-        return $this->lastStatusCode;
-    }
-
     // Utility functions
     private function _handleParameters(string $method, array|null $params,?string $query = null): array {
         $paramArray = match (gettype($params)) {
             'object' => (array) $params,
             'array' => $params,
-            'string' => $this->_isJson($params) ? (array) json_decode($params) : ($this->_isValidUuid($params)
+            'string' => $this->folioUtils->isJson($params) ? (array) json_decode($params) : ($this->folioUtils->isValidUuid($params)
                 ? ['query' => 'id="' . $params . '"'] : []),
             default => [],
         };
@@ -294,25 +297,54 @@ class FolioClient {
             }
         }
     }
-
-    private function _isValidUuid(string $uuid): bool {
-        if (!is_string($uuid) || (preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[4-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/', $uuid) !== 1)) {
-            return false;
-        }
-        return true;
-    }
-
-    private function _isJson(?string $string): bool {
-        if (!$string) {
-            return false;
-        }
-        json_decode($string);
-        return json_last_error() === JSON_ERROR_NONE;
-    }
-
+    
     public function __debugInfo(): array {
         $vars = get_object_vars($this);
         unset($vars['password'],$vars['token'],$vars['folioRefreshToken'],$vars['folioAccessToken']);
         return $vars;
+    }
+
+    // information functions
+    public function getAuthFlavor(){
+        return $this->auth->getAuthFlavor();
+    }
+
+    public function getLastStatusCode(): int {
+        return $this->lastStatusCode;
+    }
+
+    public function getStatusCode(): int {
+        return $this->lastStatusCode;
+    }
+
+    public function getLastQuery(): string {
+        return $this->lastQuery;
+    }
+
+    public function getLastQueryNum(): int {
+        return $this->queryNum;
+    }
+
+    public function getUrl(): string {
+        return $this->config->getApiUrl();
+    }
+
+    public function getTenantId(): string {
+        return $this->config->tenant_id;
+    }
+
+    public function getCentralTenantId(){
+        return $this->config->central_tenant_id ?? null;
+    }
+
+    public function getHostname(): string{
+        $host = parse_url($this->config->getApiUrl(), PHP_URL_HOST);
+        $subdomain = explode(".", $host)[0];
+        
+        return preg_replace('/^(subdomain|okapi|api|kong)-|-okapi$/', '', $subdomain);
+    }
+
+    public function getUsername(): string {
+        return $this->config->username;
     }
 }

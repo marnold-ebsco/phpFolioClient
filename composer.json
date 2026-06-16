@@ -14,7 +14,8 @@
             "FolioConfig\\": "src/folio/",
             "FolioAuth\\": "src/folio/",
             "FolioLogger\\": "src/folio/",
-            "FolioClient\\": "src/folio/"
+            "FolioClient\\": "src/folio/",
+            "FolioUtils\\": "src/folio/"
         },
         "classmap": [
             "src/"

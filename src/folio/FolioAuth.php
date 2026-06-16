@@ -8,6 +8,7 @@ use GuzzleHttp\Cookie\CookieJar;
 class FolioAuth {
     private FolioConfig $config;
     private string $token = '';
+    private string $authFlavor = 'RTR';
     public int $ATExpires = 0;
     public \dateTime $ATExpiresObj;
     public int $needsRefreshBeforeExpires = 60;
@@ -74,5 +75,10 @@ class FolioAuth {
         } catch (ClientException $e) {
             throw new \Exception("Authentication failed: " . $e->getMessage());
         }
+    }
+
+    
+    public function getAuthFlavor(){
+        return $this->authFlavor;
     }
 }

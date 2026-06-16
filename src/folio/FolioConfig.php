@@ -50,4 +50,20 @@ class FolioConfig {
         }
         return $config;
     }
+
+    public function getApiUrl(){
+        return $this->okapiUrl;
+    }
+
+    public function getTenantId(){
+        return $this->tenant_id;
+    }
+
+    public function getCentralTenantId(){
+        return $this->central_tenant_id;
+    }
+
+    public function getUsername(){
+        return $this->username;
+    }
 }
