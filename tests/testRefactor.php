@@ -21,10 +21,84 @@ try{
     print "Exception: " . $e->getMessage() . PHP_EOL;
 }
 
+try{
+    $begin=microtime(true);
+    print"\nTesting PATCH specification rule\n";
+    $obj = new stdClass();
+    $obj->enabled='true';
+    $folio->patch('specification-storage/specifications/6eefa4c6-bbf7-4845-ad82-de7fc4abd0e3/rules/7c843a14-4c87-4c7d-9ad6-5c7654bff9b5',null,$obj);
+    if($folio->getLastStatusCode() == 204){
+        print"  succeeded\n";
+    }else{
+        print"  failed\n";
+    }
+}catch(Exception $e){
+    print "  Exception: " . $e->getMessage() . PHP_EOL;
+}finally{
+    print "Elapsed time: " . number_format((microtime(true) - $begin),2) . " seconds.\n\n";
+}
+
+
+print "POST\n";
+$location = new stdClass();
+$location->name = 'Test location';
+$location->code = 'Test0';
+$location->discoveryDisplayName = $location->name;
+$location->isActive = true;
+$location->institutionId = "ba7fc3fe-1c7a-433e-a4cd-37ba26c1d36c";
+$location->campusId = "4f476eb0-af07-4483-bf96-a8fa19226915";
+$location->libraryId = "ee532760-20af-487b-8272-b4b067498e41";
+$location->primaryServicePoint = "32489163-1292-44fc-95b0-6caf81c391dd";
+$location->servicePointIds = ["32489163-1292-44fc-95b0-6caf81c391dd"];
+$id = $folio->post('locations',$location);
+print "id: $id\n";
+print "status: " . $folio->getLastStatusCode() . PHP_EOL;
+
+$scriptBegin=microtime(true);
+print "DELETE\n";
+$folio->delete('locations',$id);
+print "status: " . $folio->getLastStatusCode() . PHP_EOL;
+print "Elapsed time: " . number_format((microtime(true) - $scriptBegin),2) . " seconds.\n\n";
+
+
+//
+print"PUT\n";
+$count = 0;
+$scriptBegin=microtime(true);
+print"GET One\n";
+// original name: Lorem Circulation Holding Shelf (Staff Area)
+$location = $folio->getOne('locations','094cf617-8114-457c-a4f9-7b9a546d6344');
+// print_r($location);
+
+print "start put<<<<<<<<\n";
+$location->name = 'Lorem Circulation Holding Shelf (Staff Area)';
+unset($location->metadata);
+$folio->put('locations','094cf617-8114-457c-a4f9-7b9a546d6344',$location);
+print "status: " . $folio->getLastStatusCode() . PHP_EOL;
+
+print "validate put\n";
+$location = $folio->getOne('locations','094cf617-8114-457c-a4f9-7b9a546d6344');
+print_r($location);
+
+print "count: $count\n";
+print "Elapsed time: " . number_format((microtime(true) - $scriptBegin),2) . " seconds.\n\n";
+
+
+
+print"GET ALL empty\n";
+$count = 0;
+$scriptBegin=microtime(true);
+foreach($folio->getAll('instance-storage/instances','statisticalCodeIds="8028ab79-5a16-44eb-b48c-da94f60c8149"',['limit'=>5000]) as $value){
+    // print_r($value);
+    $count++;
+}
+print "count: $count\n";
+print "Elapsed time: " . number_format((microtime(true) - $scriptBegin),2) . " seconds.\n\n";
+
 print"GET ALL\n";
 $count = 0;
 $scriptBegin=microtime(true);
-foreach($folio->getAll('instance-storage/instances',['limit'=>5000]) as $value){
+foreach($folio->getAll('instance-storage/instances',null,['limit'=>5000]) as $value){
     // print_r($value);
     $count++;
 }
@@ -34,7 +108,7 @@ print "Elapsed time: " . number_format((microtime(true) - $scriptBegin),2) . " s
 print"GET ALL with loop\n";
 $count = 0;
 $scriptBegin=microtime(true);
-foreach($folio->getAll_loop('instance-storage/instances',['limit'=>5000]) as $value){
+foreach($folio->getAll_loop('instance-storage/instances',null,['limit'=>5000]) as $value){
     // print_r($value);
     $count++;
 }
@@ -52,10 +126,9 @@ foreach($folio->get('instance-storage/instances') as $value){
 print "count: $count\n";
 print "Elapsed time: " . number_format((microtime(true) - $scriptBegin),2) . " seconds.\n\n";
 
-exit;
 
 print"GET Full Object\n";
-print_r($folio->get('locations',['limit'=>5],FolioClient::RETURN_FULL_OBJECT));
+print_r($folio->get('locations',null,['limit'=>5],FolioClient::RETURN_FULL_OBJECT));
 
 print"GET with implicit key\n";
 foreach($folio->get('locations') as $value){
@@ -63,17 +136,17 @@ foreach($folio->get('locations') as $value){
 }
 
 print"GET with explicit key\n";
-foreach($folio->get('locations',['limit'=>5],key: 'locations') as $value){
+foreach($folio->get('locations',null,['limit'=>5],key: 'locations') as $value){
     print_r($value);
 }
 
 print"GET One\n";
 print_r($folio->getOne('locations','094cf617-8114-457c-a4f9-7b9a546d6344'));
-exit;
+
 
 print"GETEACH\n";
 $count= 0;
-foreach($folio->getEach('locations','locations',['limit'=>10]) as $value){
+foreach($folio->getEach('locations',null,['limit'=>10],'locations') as $value){
     print "Count $count\n";
     print_r($value);
     $count++;

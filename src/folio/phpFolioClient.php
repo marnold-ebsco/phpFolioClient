@@ -149,6 +149,7 @@ class phpFolioClient {
         $this->verbose = $verbose;
     }
 
+    // get information
     public function getFlavor(){
         return $this->authFlavor;
     }
