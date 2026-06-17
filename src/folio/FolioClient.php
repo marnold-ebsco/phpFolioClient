@@ -14,6 +14,8 @@ use stdClass;
     data export all
     data import
     convenience functions
+    logging
+    exceptions
 
  */
 
@@ -25,6 +27,7 @@ class FolioClient {
     private FolioLogger $logger;
     private Client $httpClient;
     private FolioUtils $folioUtils;
+    private FolioInformation $information;
 
     private int $queryNum = 0;
     private int $lastStatusCode;
@@ -38,18 +41,25 @@ class FolioClient {
         FolioAuth $auth,
         FolioUtils $folioUtils,
         FolioLogger $logger,
-        ?Client $httpClient = null
+        ?FolioInformation $information = null,
+        ?Client $httpClient = null,
+        
     ) {
         $this->config = $config;
         $this->auth = $auth;
         $this->folioUtils = $folioUtils;
         $this->logger = $logger;
+        $this->information = $information ?: new FolioInformation($config, $auth,$this);
 
         $this->httpClient = $httpClient ?: new Client([
             'base_uri' => $this->config->okapiUrl,
             'timeout'  => $this->config->timeout,
             'verify'   => $this->config->sslVerify,
         ]);
+    }
+
+    public function getConfig(){
+        return $this->config;
     }
 
     public function get(string $endpoint, ?string $query = null, mixed $params = null, string|int|null $key = null, ?string $tenant_id = null): mixed {    
@@ -60,7 +70,7 @@ class FolioClient {
         }
         
         // get implicit key and total records
-        $responseInfo = $this->getResponseInfo($response);
+        $responseInfo = $this->_getResponseInfo($response);
         $key ??= $responseInfo['key'];
         
         return $this->_yieldRecords($response, $key);   //return generator
@@ -90,7 +100,7 @@ class FolioClient {
             // get data
             $response = $this->_request('GET', $endpoint, $query, $params, $tenant_id);
             // get implicit key and total records
-            $responseInfo = $this->getResponseInfo($response);
+            $responseInfo = $this->_getResponseInfo($response);
             $key ??= $responseInfo['key'];
             
             foreach ($response->$key as $result) {
@@ -110,7 +120,7 @@ class FolioClient {
         
         $response = $this->_request('GET', $endpoint, $query, $params, $tenant_id);     // get first response
 
-        $responseInfo = $this->getResponseInfo($response);
+        $responseInfo = $this->_getResponseInfo($response);
         $key ??= $responseInfo['key'];
 
         $records = $response->{$key};
@@ -151,7 +161,7 @@ class FolioClient {
             'headers' => ['Accept' => 'text/plain']
         ];
 
-        $this->_request('PUT', $endpoint, null, [], $options, $tenant_id);
+        $this->_request('PUT', $endpoint, null, [], $tenant_id, $options);
     }
 
     public function patch(string $endpoint, ?string $id = null, array|object|null $params = null, ?string $tenant_id = null): void {
@@ -165,8 +175,8 @@ class FolioClient {
             'json' => $json,
             'headers' => ['Content-Type' => 'application/json']
         ];
-
-        $this->_request('PATCH', $endpoint, null, [], $options, $tenant_id);
+    
+        $this->_request('PATCH', $endpoint, null, [], $tenant_id, $options);
     }
 
     public function post(string $endpoint, array|object|null $params = null, ?string $tenant_id = null): string {
@@ -177,7 +187,7 @@ class FolioClient {
             'headers' => ['Accept' => 'text/plain']
         ];
 
-        $response = $this->_request('POST', $endpoint, null, [], $options, $tenant_id);
+        $response = $this->_request('POST', $endpoint, null, [], $tenant_id, $options);
         return $response->id;
     }
 
@@ -190,10 +200,10 @@ class FolioClient {
             'headers' => ['Accept' => 'text/plain']
         ];
 
-        $this->_request('DELETE', $endpoint, null, [], $options, $tenant_id);
+        $this->_request('DELETE', $endpoint, null, [], $tenant_id, $options);
     }
 
-    private function _request(string $method, string $endpoint, ?string $query, array|null $params = [], array|null $options = [], ?string $tenant_id = null): array|object|null {
+    public function _request(string $method, string $endpoint, ?string $query, array|null $params = [], ?string $tenant_id = null, array|null $options = []): array|object|null {
         $params ??= [];
         $method = strtoupper($method);
         $uri = trim($endpoint, "/ \t\r\n\0");
@@ -266,22 +276,7 @@ class FolioClient {
         return $paramArray;
     }
 
-    private function _setOptions(array|null $extraOptions = null,string|null $tenant_id = null): array|null{
-        $tenant_id ??= $this->tenant_id;
-        // $options = [
-        //     'headers' => [
-        //         'json' => $
-        //     ]
-        // ];
-        if($extraOptions){
-            if(is_array($extraOptions)){
-                $options = array_merge_recursive($options,$extraOptions);
-            }
-        }
-        return $options;
-    }
-
-    private function getResponseInfo(stdClass $jsonObject){
+    private function _getResponseInfo(stdClass $jsonObject){
         // perform introspection on json object to get key
         $properties = get_object_vars($jsonObject);
         $arrayKeys = array_keys(array_filter($properties, 'is_array'));
@@ -305,8 +300,8 @@ class FolioClient {
     }
 
     // information functions
-    public function getAuthFlavor(){
-        return $this->auth->getAuthFlavor();
+    public function getInformation(): FolioInformation {
+        return $this->information;
     }
 
     public function getLastStatusCode(): int {
@@ -323,28 +318,5 @@ class FolioClient {
 
     public function getLastQueryNum(): int {
         return $this->queryNum;
-    }
-
-    public function getUrl(): string {
-        return $this->config->getApiUrl();
-    }
-
-    public function getTenantId(): string {
-        return $this->config->tenant_id;
-    }
-
-    public function getCentralTenantId(){
-        return $this->config->central_tenant_id ?? null;
-    }
-
-    public function getHostname(): string{
-        $host = parse_url($this->config->getApiUrl(), PHP_URL_HOST);
-        $subdomain = explode(".", $host)[0];
-        
-        return preg_replace('/^(subdomain|okapi|api|kong)-|-okapi$/', '', $subdomain);
-    }
-
-    public function getUsername(): string {
-        return $this->config->username;
     }
 }

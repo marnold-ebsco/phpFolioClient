@@ -6,6 +6,8 @@ use phpFolioClient\FolioAuth;
 use phpFolioClient\FolioLogger;
 use phpFolioClient\FolioClient;
 use phpFolioClient\FolioUtils;
+use phpFolioClient\FolioInformation;
+use phpFolioClient\FolioReferenceDataManager;
 use phpFolioClient\phpFolioClient;
 
 $hostname = 'lsedemo';
@@ -16,20 +18,60 @@ $config = new FolioConfig($hostname . ".ini");
 $logger = new FolioLogger('folioClientLog.txt');
 $utils = new FolioUtils();
 
+
 try{
     $auth = new FolioAuth($config);
     $auth->getAccessToken();
     $folio = new FolioClient($config,$auth,$utils,$logger);
+    $information = new FolioInformation($config,$auth);
+    $refData = new FolioReferenceDataManager($folio);
 }catch(Exception $e){
     print "Exception: " . $e->getMessage() . PHP_EOL;
 }
 
 
-print"authFlavor: " . $folio->getAuthFlavor() . PHP_EOL;
-print"status code: ";
-$folio->get('locations');
+$locNames = $refData->getLocations();
+print "Location names count: " . sizeof($locNames) . PHP_EOL;
+
+$locCodes = $refData->getLocationCodes();
+print "Location codes count: " . sizeof($locCodes) . PHP_EOL;
+
+$mattypes = $refData->getMaterialTypes();
+print "Mattype count: " . sizeof($mattypes) . PHP_EOL;
+
+$loanTypes = $refData->getLoanTypes();
+print "Loan types count: " . sizeof($loanTypes) . PHP_EOL;
+
+$departments = $refData->getDepartments();
+print "Departments (user) count: " . sizeof($departments) . PHP_EOL;
+
+$addressTypes = $refData->getAddressTypes();
+print "Address type (user) count: " . sizeof($addressTypes) . PHP_EOL;
+
+$patronGroups = $refData->getPatronGroups();
+print "Patron group count: " . sizeof($patronGroups) . PHP_EOL;
+
+$servicePoints = $refData->getServicePoints();
+print "Service point count: " . sizeof($servicePoints) . PHP_EOL;
+
+$modules = $refData->getModules();
+print "Modules count: " . sizeof($modules) . PHP_EOL;
+
+$customFields = $refData->getCustomFieldNames();
+print "Custom field names (user) count: " . sizeof($customFields) . PHP_EOL;
+
+$customFields = $refData->getCustomFields();
+print "Custom fields refid (user) count: " . sizeof($customFields) . PHP_EOL;
+
+
+print"status information";
+// foreach($folio->get('locations') as $location){
+//     print "$location->code, ";
+// }
+print"\n";
+print"last status code: ";
 print $folio->getLastStatusCode() . PHP_EOL;
-print"status code: ";
+print"status code (alias): ";
 print $folio->getStatusCode() . PHP_EOL;
 
 print"last query: ";
@@ -38,21 +80,24 @@ print $folio->getLastQuery() . PHP_EOL;
 print"last query number: ";
 print $folio->getLastQueryNum() . PHP_EOL;
 
+
+print"authFlavor: " . $folio->getInformation()->getAuthFlavor() . PHP_EOL;
+
 print"get api url: ";
-print $folio->getUrl() . PHP_EOL;
+print $folio->getInformation()->getUrl() . PHP_EOL;
 
 print"get tenant id: ";
-print $folio->getTenantId() . PHP_EOL;
+print $folio->getInformation()->getTenantId() . PHP_EOL;
 
 print"get central tenant id: ";
-print $folio->getCentralTenantId() . PHP_EOL;
+print $folio->getInformation()->getCentralTenantId() . PHP_EOL;
 
 print"get hostname: ";
-print $folio->getHostname() . PHP_EOL;
+print $folio->getInformation()->getHostname() . PHP_EOL;
 
 print"get username: ";
-print $folio->getUsername() . PHP_EOL;
-exit;
+print $folio->getInformation()->getUsername() . PHP_EOL;
+
 
 try{
     $begin=microtime(true);
