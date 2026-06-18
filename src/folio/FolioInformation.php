@@ -2,19 +2,19 @@
 namespace phpFolioClient;
 
 class FolioInformation {
-    private $config;
-    private $auth;
-    private $lastStatusCode = 0;
-    private $lastQuery = '';
-    private $queryNum = 0;
+    private FolioConfig $config;
+    private FolioAuth $auth;
+    private int $lastStatusCode = 0;
+    private string $lastQuery = '';
+    private int $queryNum = 0;
 
-    public function __construct($config, $auth) {
+    public function __construct(FolioConfig $config, FolioAuth $auth) {
         $this->config = $config;
         $this->auth = $auth;
     }
 
     // information functions
-    public function getAuthFlavor(){
+    public function getAuthFlavor(): string{
         return $this->auth->getAuthFlavor();
     }
 
@@ -26,7 +26,7 @@ class FolioInformation {
         return $this->config->tenant_id;
     }
 
-    public function getCentralTenantId(){
+    public function getCentralTenantId(): string {
         return $this->config->central_tenant_id ?? null;
     }
 

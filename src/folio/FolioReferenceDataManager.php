@@ -5,7 +5,6 @@ use Generator;
 
 class FolioReferenceDataManager{
     private FolioClient $client;
-    private array $cachedData = [];
 
     public function __construct(FolioClient $client)    {
         $this->client = $client;

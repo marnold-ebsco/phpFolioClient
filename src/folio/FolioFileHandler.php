@@ -1,20 +1,33 @@
 <?php declare(strict_types=1);
 namespace phpFolioClient;
 
+use GuzzleHttp\Client;
+use GuzzleHttp\Psr7\Request;
+
 class FolioFileHandler {
+    private FolioClient $client;
+    private FolioConfig $config;
+    private FolioAuth $auth;
+
+    public function __construct(FolioClient $client, FolioConfig $config, FolioAuth $auth){
+        $this->client = $client;
+        $this->config = $config;
+        $this->auth = $auth;
+    }
+    
+    
     #file functions
     public function putFile(string $endpoint,string $filename,string|null $tenant_id = null): array|object|null{
-        $tenant_id ??= $this->central_tenant_id ?? $this->tenant_id;
+        $tenant_id ??= $this->config->central_tenant_id ?? $this->config->tenant_id;
         try{
             $endpoint = trim($endpoint,"/ \t\r\n\0");
-            $tenant_id ??= $this->tenant_id;
             if(file_exists($filename)){
                 $options = [
                     'headers' => [
                         'Accept' => 'application/json',
-                        'x-okapi-tenant' => $tenant_id,
+                        'x-okapi-tenant' => $this->config->tenant_id,
                         'Content-Type' => 'application/octet-stream',
-                        'x-okapi-token' => $this->token
+                        'x-okapi-token' => $this->auth->getAccessToken()
                     ],
 					'multipart' => [
 						[
@@ -28,7 +41,7 @@ class FolioFileHandler {
 					]
                 ];
                
-                $response = $this->_request('POST',$endpoint,null,$options);
+                $response = $this->client->_request('POST',$endpoint,null,[],$tenant_id,$options);
                 return $response;
                 
             }else{
@@ -52,15 +65,15 @@ class FolioFileHandler {
         try{
             $fh = fopen($filename,'w');
             if($fh){
-                $client = new Client(['base_uri' => $this->okapiUrl,'verify'=>$this->sslVerify]);
-                $request = $client->get($url, ['sink' => $fh],null,$tenant_id);
+                $client = new Client(['base_uri' => $this->config->okapiUrl,'verify'=>$this->config->sslVerify]);
+                $client->get($url, ['sink' => $fh]);
 
-                if($this->logPath){
+                // if($this->logPath){
 
-                    $now = new \DateTime();
-                    fwrite($this->logFh,"Query $this->queryNum:\t" . "GET file: $filename / $url\t" . $now->format("Y-m-d H:i:s.u") . PHP_EOL);
-                }
-                $this->queryNum++;
+                //     $now = new \DateTime();
+                //     fwrite($this->logFh,"Query $this->queryNum:\t" . "GET file: $filename / $url\t" . $now->format("Y-m-d H:i:s.u") . PHP_EOL);
+                // }
+                // $this->queryNum++;
                 
             }else{
                 throw new \Exception("Could not open filename: $filename");

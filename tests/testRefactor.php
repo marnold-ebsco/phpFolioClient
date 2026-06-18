@@ -5,6 +5,8 @@ use phpFolioClient\FolioConfig;
 use phpFolioClient\FolioAuth;
 use phpFolioClient\FolioLogger;
 use phpFolioClient\FolioClient;
+use phpFolioClient\FolioDataExport;
+use phpFolioClient\FolioFileHandler;
 use phpFolioClient\FolioUtils;
 use phpFolioClient\FolioInformation;
 use phpFolioClient\FolioReferenceDataManager;
@@ -13,23 +15,27 @@ use phpFolioClient\phpFolioClient;
 $hostname = 'lsedemo';
 
 
-$config = new FolioConfig($hostname . ".ini");
-
-$logger = new FolioLogger('folioClientLog.txt');
-$utils = new FolioUtils();
-
-
 try{
+    $config = new FolioConfig($hostname . ".ini");
+    $logger = new FolioLogger('folioClientLog.txt');
+    $utils = new FolioUtils();
+
     $auth = new FolioAuth($config);
     $auth->getAccessToken();
     $folio = new FolioClient($config,$auth,$utils,$logger);
     $information = new FolioInformation($config,$auth);
     $refData = new FolioReferenceDataManager($folio);
+    $fileHandler = new FolioFileHandler($folio,$config,$auth);
+    $exportHandler = new FolioDataExport($folio,$config,$fileHandler);
+    
+
 }catch(Exception $e){
     print "Exception: " . $e->getMessage() . PHP_EOL;
 }
 
 
+$exportHandler->dataExport();
+exit;
 $locNames = $refData->getLocations();
 print "Location names count: " . sizeof($locNames) . PHP_EOL;
 

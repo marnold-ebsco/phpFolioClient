@@ -22,6 +22,7 @@ use stdClass;
 
 class FolioClient {
     public const RETURN_FULL_OBJECT = -1;
+
     private FolioConfig $config;
     private FolioAuth $auth;
     private FolioLogger $logger;
@@ -179,16 +180,21 @@ class FolioClient {
         $this->_request('PATCH', $endpoint, null, [], $tenant_id, $options);
     }
 
-    public function post(string $endpoint, array|object|null $params = null, ?string $tenant_id = null): string {
+    public function post(string $endpoint, array|object|string|null $params = null, ?string $tenant_id = null,?array $options = null): ?string {
         $json = is_object($params) ? (array) $params : json_decode($params, true);
 
         $options = [
             'json' => $json,
-            'headers' => ['Accept' => 'text/plain']
+            'headers' => ['Accept' => 'text/plain', 'Content-Type' => 'application/json']
         ];
 
         $response = $this->_request('POST', $endpoint, null, [], $tenant_id, $options);
-        return $response->id;
+        if(isset($response)){
+            return $response->id;
+        }else{
+            return null;
+        }
+        
     }
 
     public function delete(string $endpoint, ?string $id = null, ?string $tenant_id = null): void {
@@ -217,7 +223,7 @@ class FolioClient {
         $finalOptions = $this->_buildRequestOptions($options);
         
         $this->lastQuery = "{$method}: {$uri}";
-
+print_r($finalOptions);
         try {
             $response = $this->httpClient->request($method, $uri . $queryString, $finalOptions);
             $this->lastStatusCode = $response->getStatusCode();
