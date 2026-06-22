@@ -34,8 +34,9 @@ try{
 }
 
 
-$exportHandler->dataExport();
+$exportHandler->dataExport('test.csv');
 exit;
+
 $locNames = $refData->getLocations();
 print "Location names count: " . sizeof($locNames) . PHP_EOL;
 
@@ -129,12 +130,13 @@ $location->name = 'Test location';
 $location->code = 'Test0';
 $location->discoveryDisplayName = $location->name;
 $location->isActive = true;
-$location->institutionId = "ba7fc3fe-1c7a-433e-a4cd-37ba26c1d36c";
-$location->campusId = "4f476eb0-af07-4483-bf96-a8fa19226915";
-$location->libraryId = "ee532760-20af-487b-8272-b4b067498e41";
+$location->institutionId = "ba7fc3fe-1c7a-433e-a4cd-37ba26c1d36c"; // Generic State University
+$location->campusId = "4f476eb0-af07-4483-bf96-a8fa19226915"; // Lorem campus
+$location->libraryId = "ee532760-20af-487b-8272-b4b067498e41"; // Lorem library
 $location->primaryServicePoint = "32489163-1292-44fc-95b0-6caf81c391dd";
 $location->servicePointIds = ["32489163-1292-44fc-95b0-6caf81c391dd"];
-$id = $folio->post('locations',$location);
+$response= $folio->post('locations',$location);
+$id = $response->id;
 print "id: $id\n";
 print "status: " . $folio->getLastStatusCode() . PHP_EOL;
 

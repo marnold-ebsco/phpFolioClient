@@ -27,7 +27,7 @@ class FolioInformation {
     }
 
     public function getCentralTenantId(): string {
-        return $this->config->central_tenant_id ?? null;
+        return $this->config->central_tenant_id ?? '';
     }
 
     public function getHostname(): string{

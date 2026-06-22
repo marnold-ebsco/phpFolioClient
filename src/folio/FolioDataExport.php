@@ -5,7 +5,7 @@ class FolioDataExport {
     private FolioClient $client;
     private FolioConfig $config;
     private FolioFileHandler $fileHandler;
-    private $verbose=true;
+    private $verbose=false;
 
     public function __construct(FolioClient $client,FolioConfig $config, FolioFileHandler $fileHandler){
         $this->client = $client;
@@ -27,19 +27,21 @@ class FolioDataExport {
 
             // step 2 - get file id
             $fileInfo = new \stdClass();
-            $fileInfo->fileName = $filename;
-            print_r($fileInfo);
-            print json_encode($fileInfo) . PHP_EOL;
-            $fileDef=$this->client->post('/data-export/file-definitions',json_encode($fileInfo),$tenant_id);
-            print_r($fileDef);
+            $fileInfo->fileName = realpath($filename);
+            // readfile(realpath($filename));
+            
+            $options = [
+                'headers' => ['Accept' => 'application/json']
+            ];
+            $fileDef=$this->client->post('/data-export/file-definitions',$fileInfo,null,$options);
 
-            exit;
             $fileId=$fileDef->id;
             $jobExecId = $fileDef->jobExecutionId;
             ($this->verbose) ? print "step 2 - get file id / jobExecutionId: $fileId / $jobExecId\n" : '';
             ($this->verbose) ? print_r($fileDef) : '';
+            print_r($fileDef);
             // step 3 - upload the file
-            $uploadInfo=$this->client->putFile("/data-export/file-definitions/$fileId/upload",$filename,$tenant_id);
+            $uploadInfo=$this->fileHandler->putFile("/data-export/file-definitions/$fileId/upload",$filename,$tenant_id);
             ($this->verbose) ? print "step 3 - get job id\n" : '';
             ($this->verbose) ? print_r($uploadInfo) : '';
 
@@ -48,7 +50,7 @@ class FolioDataExport {
                             'idType'=>'instance','recordType'=>'INSTANCE','deletedRecords'=>false,
                             'suppressedFromDiscovery'=>false
                         ];
-            $fileDef=$this->client->post('/data-export/export',json_encode($exportInfo),null,$tenant_id);
+            $fileDef=$this->client->post('/data-export/export',json_encode($exportInfo),$tenant_id);
             ($this->verbose) ? print "step 4 - initiate export \n" : '';
             ($this->verbose) ? print_r($fileDef) : '';
 
@@ -58,26 +60,23 @@ class FolioDataExport {
             $timeLimit = 300;
             $continue = true;
             $time = time();
-            $continue = true;
             do{
-                $jobExecInfo=$this->client->get('/data-export/job-executions',['query'=>'id=="' . $jobExecId . '"'],null,$tenant_id);
+                $jobExecInfo=$this->client->get('/data-export/job-executions','id=="' . $jobExecId . '"',[],FolioClient::RETURN_FULL_OBJECT,tenant_id: $tenant_id);
+
                 $status = $jobExecInfo->jobExecutions[0]->status;
                 
-                if($jobExecInfo->jobExecutions[0]->status == 'SUCCESS' || 
-                    $jobExecInfo->jobExecutions[0]->status == 'COMPLETED' || 
-                    $jobExecInfo->jobExecutions[0]->status == 'COMPLETED_WITH_ERRORS' || 
-                    $jobExecInfo->jobExecutions[0]->status == 'FAIL'){
+                if(in_array($status, ['SUCCESS', 'COMPLETED', 'COMPLETED_WITH_ERRORS', 'FAIL'])){
                     $continue=false;
-                    ($this->verbose) ? "$status\n" : '';
+                    ($this->verbose) ? print "$status\n" : '';
                 }
                 if(time() - $time > $timeLimit){
                     throw new \Exception('Step 5 took too long');
                 }
                 sleep(1);
             }while ($continue);
-            if($status == 'FAIL'){
-                throw new \Exception("Export failed because job returned with a status of 'FAIL'");
-            }
+            // if($status == 'FAIL'){
+            //     throw new \Exception("Export failed because job returned with a status of 'FAIL'");
+            // }
             $fileId=$jobExecInfo->jobExecutions[0]->exportedFiles[0]->fileId;
             $stats = $jobExecInfo->jobExecutions[0]->progress;
             ($this->verbose) ? print "step 5 - fileId: $fileId\n" : '';
@@ -85,7 +84,7 @@ class FolioDataExport {
 
             // step 6 - get link to retrieve file
             if($jobExecId && $fileId){
-                $linkInfo=$this->client->get("/data-export/job-executions/$jobExecId/download/$fileId",null,null,$tenant_id);
+                $linkInfo=$this->client->get("/data-export/job-executions/$jobExecId/download/$fileId",null,null,FolioClient::RETURN_FULL_OBJECT,$tenant_id);
                 $url=$linkInfo->link;
                 ($this->verbose) ? print "step 6 - get link\n" : '';
                 ($this->verbose) ? print_r($linkInfo) : '';
@@ -94,7 +93,7 @@ class FolioDataExport {
             }
 
             // step 7 - get file
-            $this->client->getFile($out_Path . $jobExecInfo->jobExecutions[0]->exportedFiles[0]->fileName,$url,$tenant_id);
+            $this->fileHandler->getFile($out_Path . $jobExecInfo->jobExecutions[0]->exportedFiles[0]->fileName,$url,$tenant_id);
             ($this->verbose) ? print "step 7 - get file\n" : '';
 
             return $jobExecInfo;

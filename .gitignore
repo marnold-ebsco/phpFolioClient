@@ -6,3 +6,5 @@ folioLog.txt
 fileExportTest.csv
 lsedemo.ini
 .phpunit.result.cache
+test*.mrc
+test*.csv

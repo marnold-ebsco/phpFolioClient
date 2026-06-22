@@ -25,7 +25,7 @@ class FolioClient {
 
     private FolioConfig $config;
     private FolioAuth $auth;
-    private FolioLogger $logger;
+    private ?FolioLogger $logger;
     private Client $httpClient;
     private FolioUtils $folioUtils;
     private FolioInformation $information;
@@ -41,7 +41,7 @@ class FolioClient {
         FolioConfig $config,
         FolioAuth $auth,
         FolioUtils $folioUtils,
-        FolioLogger $logger,
+        ?FolioLogger $logger = null,
         ?FolioInformation $information = null,
         ?Client $httpClient = null,
         
@@ -180,20 +180,17 @@ class FolioClient {
         $this->_request('PATCH', $endpoint, null, [], $tenant_id, $options);
     }
 
-    public function post(string $endpoint, array|object|string|null $params = null, ?string $tenant_id = null,?array $options = null): ?string {
-        $json = is_object($params) ? (array) $params : json_decode($params, true);
+    public function post(string $endpoint, array|object|string|null $params = null, ?string $tenant_id = null,?array $options = null): ?object {
+        $json = is_object($params) ? (array) $params : (is_string($params) ? json_decode($params, true) : $params);
 
-        $options = [
+        $defaultOptions = [
             'json' => $json,
             'headers' => ['Accept' => 'text/plain', 'Content-Type' => 'application/json']
         ];
 
-        $response = $this->_request('POST', $endpoint, null, [], $tenant_id, $options);
-        if(isset($response)){
-            return $response->id;
-        }else{
-            return null;
-        }
+        $options = array_replace_recursive($defaultOptions, $options ?? []);
+
+        return $this->_request('POST', $endpoint, null , [], $tenant_id, $options);
         
     }
 
@@ -223,7 +220,6 @@ class FolioClient {
         $finalOptions = $this->_buildRequestOptions($options);
         
         $this->lastQuery = "{$method}: {$uri}";
-print_r($finalOptions);
         try {
             $response = $this->httpClient->request($method, $uri . $queryString, $finalOptions);
             $this->lastStatusCode = $response->getStatusCode();
