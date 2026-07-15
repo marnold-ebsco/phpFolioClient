@@ -51,7 +51,7 @@ class FolioClient {
         $this->auth = $auth;
         $this->folioUtils = $folioUtils;
         $this->logger = $logger;
-        $this->information = $information ?: new FolioInformation($config, $auth,$this);
+        $this->information = $information ?: new FolioInformation($config, $auth);
 
         $this->httpClient = $httpClient ?: new Client([
             'base_uri' => $this->config->okapiUrl,
@@ -62,6 +62,10 @@ class FolioClient {
 
     public function getConfig(){
         return $this->config;
+    }
+
+    public function getAuth(){
+        return $this->auth;
     }
 
     public function get(string $endpoint, ?string $query = null, mixed $params = null, string|int|null $key = null, ?string $tenant_id = null): mixed {    

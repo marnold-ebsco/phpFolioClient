@@ -10,7 +10,6 @@ class FolioLogger {
 
     public function __construct(mixed $logPath = false, bool $debug = false, bool $verbose = false) {
         $this->logPath = $logPath;
-        print "log path: $logPath\n";
         $this->debug = $debug;
         $this->verbose = $verbose;
 

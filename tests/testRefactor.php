@@ -16,16 +16,17 @@ $hostname = 'lsedemo';
 
 try{
     $config = new FolioConfig($hostname . ".ini");
-    $logger = new FolioLogger('folioClientLog.txt');
     $utils = new FolioUtils();
-
     $auth = new FolioAuth($config);
-    $auth->getAccessToken();
-    $folio = new FolioClient($config,$auth,$utils,$logger);
+    // $auth->getAccessToken();
+    $logger = new FolioLogger('folioClientLog.txt');
     $information = new FolioInformation($config,$auth);
+
+    $folio = new FolioClient($config,$auth,$utils,$logger);
+    
     $refData = new FolioReferenceDataManager($folio);
-    $fileHandler = new FolioFileHandler($folio,$config,$auth);
-    $exportHandler = new FolioDataExport($folio,$config,$fileHandler);
+    $fileHandler = new FolioFileHandler($folio);
+    $exportHandler = new FolioDataExport($folio,$fileHandler);
     
 
 }catch(Exception $e){
@@ -44,6 +45,7 @@ print "Location names count: " . sizeof($locNames) . PHP_EOL;
 
 $locCodes = $refData->getLocationCodes();
 print "Location codes count: " . sizeof($locCodes) . PHP_EOL;
+exit;
 
 $mattypes = $refData->getMaterialTypes();
 print "Mattype count: " . sizeof($mattypes) . PHP_EOL;

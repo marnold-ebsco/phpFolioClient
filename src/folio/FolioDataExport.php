@@ -7,9 +7,9 @@ class FolioDataExport {
     private FolioFileHandler $fileHandler;
     private $verbose=false;
 
-    public function __construct(FolioClient $client,FolioConfig $config, FolioFileHandler $fileHandler){
+    public function __construct(FolioClient $client, FolioFileHandler $fileHandler){
         $this->client = $client;
-        $this->config = $config;
+        $this->config = $client->getConfig();
         $this->fileHandler = $fileHandler;
     }
 
@@ -17,7 +17,6 @@ class FolioDataExport {
     function dataExport(string $filename = 'test.csv',string $exportProfileName = 'Default instances export job profile',string $out_Path = '',string|null $tenant_id = null): array|object|null {
         // https://folio-org.atlassian.net/browse/UXPROD-2330
         $tenant_id ??= $this->config->central_tenant_id ?? $this->config->tenant_id;       
-$this->verbose = true;
         try{
             // step 1 - get export profile id
             $profile=$this->client->get('/data-export/job-profiles','name=="' . $exportProfileName . '"',[],FolioClient::RETURN_FULL_OBJECT,tenant_id: $tenant_id);
@@ -29,7 +28,6 @@ $this->verbose = true;
             $fileInfo = new \stdClass();
             $fileInfo->fileName = realpath($filename);
             $fileInfo->uploadFormat = 'csv';
-            print_r($fileInfo);
             
             $options = [
                 'headers' => ['Accept' => 'application/json']
@@ -42,15 +40,12 @@ $this->verbose = true;
             //     ]
             // ];
 
-            print_r($options);
-
             $fileDef=$this->client->post('/data-export/file-definitions',$fileInfo,null,$options);
 
             $fileId=$fileDef->id;
             $jobExecId = $fileDef->jobExecutionId;
             ($this->verbose) ? print "step 2 - get file id / jobExecutionId: $fileId / $jobExecId\n" : '';
             ($this->verbose) ? print_r($fileDef) : '';
-            print_r($fileDef);
             // step 3 - upload the file
             $uploadInfo=$this->fileHandler->putFile("/data-export/file-definitions/$fileId/upload",$filename,$tenant_id);
             ($this->verbose) ? print "step 3 - get job id\n" : '';
@@ -142,7 +137,6 @@ $this->verbose = true;
             $obj->idType = 'instance';
             $obj->deletedRecords = $includeDeleted;
             $obj->suppressedFromDiscovery = $includeSuppressed;
-            print_r($obj);
             $response = $this->client->post('/data-export/export-all',json_encode($obj),tenant_id: $tenant_id);
             ($this->verbose) ? print_r($response) : '';
 

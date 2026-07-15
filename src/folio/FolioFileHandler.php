@@ -10,10 +10,10 @@ class FolioFileHandler {
     private FolioConfig $config;
     private FolioAuth $auth;
 
-    public function __construct(FolioClient $client, FolioConfig $config, FolioAuth $auth){
+    public function __construct(FolioClient $client){
         $this->client = $client;
-        $this->config = $config;
-        $this->auth = $auth;
+        $this->config = $client->getConfig();
+        $this->auth   = $client->getAuth();
     }
     
     
