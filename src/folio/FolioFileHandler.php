@@ -31,21 +31,26 @@ class FolioFileHandler {
                         'Content-Type' => 'application/octet-stream',
                         'x-okapi-token' => $this->auth->getAccessToken()
                     ],
-					'multipart' => [
-						[
-							'contents' => file_get_contents($filename),
-							'name'	   => 'FileContents'
-						]
-					],
+					// 'multipart' => [
+					// 	[
+					// 		'contents' => file_get_contents($filename),
+					// 		'name'	   => 'FileContents'
+					// 	]
+					// ],
+                    'body' => fopen($filename, 'r'), // Send raw stream directly, NO multipart wrapper
 					'curl' => [
 						CURLOPT_RETURNTRANSFER => true,
 						CURLOPT_FOLLOWLOCATION => true
-					]
+					],
+                    'debug' => true
                 ];
+                print "!!!!!!!\n";
+                print_r($options);
                 
                 // $client = new Client(['base_uri' => $this->config->okapiUrl,'verify'=>$this->config->sslVerify]);
                 $response = $this->client->post($endpoint,null,$tenant_id,$options);
                 print_r($response);
+                // exit;
                 return $response;
 
                 // $response = $client->request('POST', $endpoint, [

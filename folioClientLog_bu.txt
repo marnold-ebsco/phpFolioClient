@@ -1,0 +1,410 @@
+Query 1:	GET: /_/proxy/tenants/fs00001208/modules?query=cql.allRecords%3D1&limit=500	2026-06-05 19:18:16.296970
+Query 1 (decoded):	/_/proxy/tenants/fs00001208/modules?query=cql.allRecords=1&limit=500	2026-06-05 19:18:16.296970
+Response 1:	200 / OK	2026-06-05 19:18:17.084985
+
+Query 2:	GET: /_/proxy/tenants/fs00001208/modules?query=cql.allRecords%3D1&limit=500	2026-06-05 19:18:17.085920
+Query 2 (decoded):	/_/proxy/tenants/fs00001208/modules?query=cql.allRecords=1&limit=500	2026-06-05 19:18:17.085920
+Response 2:	200 / OK	2026-06-05 19:18:17.674578
+
+Query 3:	GET: /custom-fields	2026-06-05 19:18:17.675643
+Query 3 (decoded):	/custom-fields	2026-06-05 19:18:17.675643
+Response 3:	200 / OK	2026-06-05 19:18:18.275660
+
+Query 4:	GET: /_/proxy/tenants/fs00001208/modules?query=cql.allRecords%3D1&limit=500	2026-06-05 19:18:18.276849
+Query 4 (decoded):	/_/proxy/tenants/fs00001208/modules?query=cql.allRecords=1&limit=500	2026-06-05 19:18:18.276849
+Response 4:	200 / OK	2026-06-05 19:18:19.002760
+
+Query 5:	GET: /custom-fields	2026-06-05 19:18:19.003632
+Query 5 (decoded):	/custom-fields	2026-06-05 19:18:19.003632
+Response 5:	200 / OK	2026-06-05 19:18:19.604520
+
+Query 6:	GET: /material-types?query=name%3D%3D%22testMType%22	2026-06-05 19:18:19.605452
+Query 6 (decoded):	/material-types?query=name=="testMType"	2026-06-05 19:18:19.605452
+Response 6:	200 / OK	2026-06-05 19:18:20.209056
+
+Query 7:	POST: /material-types	2026-06-05 19:18:20.209779
+Query 7 (decoded):	/material-types	2026-06-05 19:18:20.209779
+Response 7:	201 / Created	2026-06-05 19:18:20.868521
+Response Body 7:
+{
+  "id" : "3ba89d42-9300-4bad-b144-a30db15a4ebf",
+  "name" : "testMType",
+  "metadata" : {
+    "createdDate" : "2026-06-05T19:18:20.694+00:00",
+    "createdByUserId" : "db700e64-32f9-4bfe-b00a-a65bb35916c5",
+    "updatedDate" : "2026-06-05T19:18:20.694+00:00",
+    "updatedByUserId" : "db700e64-32f9-4bfe-b00a-a65bb35916c5"
+  }
+}	2026-06-05 19:18:20.868521
+
+Query 8:	GET: /material-types?query=name%3D%3D%22testMType%22	2026-06-05 19:18:20.869429
+Query 8 (decoded):	/material-types?query=name=="testMType"	2026-06-05 19:18:20.869429
+Response 8:	200 / OK	2026-06-05 19:18:21.509215
+
+Query 9:	DELETE: /material-types/3ba89d42-9300-4bad-b144-a30db15a4ebf	2026-06-05 19:18:21.510211
+Query 9 (decoded):	/material-types/3ba89d42-9300-4bad-b144-a30db15a4ebf	2026-06-05 19:18:21.510211
+Response 9:	204 / No Content	2026-06-05 19:18:22.088507
+Response Body 9:
+	2026-06-05 19:18:22.088507
+
+Query 10:	GET: /material-types?query=name%3D%3D%22testMType%22	2026-06-05 19:18:22.089281
+Query 10 (decoded):	/material-types?query=name=="testMType"	2026-06-05 19:18:22.089281
+Response 10:	200 / OK	2026-06-05 19:18:22.784735
+
+Query 11:	GET: /loan-types	2026-06-05 19:18:22.785545
+Query 11 (decoded):	/loan-types	2026-06-05 19:18:22.785545
+Response 11:	200 / OK	2026-06-05 19:18:23.383593
+
+Query 12:	GET: /loan-types/a1dc1ce3-d56f-4d8a-b498-d5d674ccc845	2026-06-05 19:18:23.384700
+Query 12 (decoded):	/loan-types/a1dc1ce3-d56f-4d8a-b498-d5d674ccc845	2026-06-05 19:18:23.384700
+Response 12:	200 / OK	2026-06-05 19:18:24.000647
+
+Query 13:	GET: /item-storage/items	2026-06-05 19:18:24.001619
+Query 13 (decoded):	/item-storage/items	2026-06-05 19:18:24.001619
+Response 13:	200 / OK	2026-06-05 19:18:24.738948
+
+Query 14:	PATCH: /item-storage/items/4510e253-f43a-4dcc-81ff-7fdc7283599a	2026-06-05 19:18:24.740065
+Query 14 (decoded):	/item-storage/items/4510e253-f43a-4dcc-81ff-7fdc7283599a	2026-06-05 19:18:24.740065
+Error 14:	404:  / Not Found	2026-06-05 19:18:25.325500
+
+Query 15:	PATCH: /specification-storage/specifications/6eefa4c6-bbf7-4845-ad82-de7fc4abd0e3/rules/7c843a14-4c87-4c7d-9ad6-5c7654bff9b5	2026-06-05 19:18:25.325715
+Query 15 (decoded):	/specification-storage/specifications/6eefa4c6-bbf7-4845-ad82-de7fc4abd0e3/rules/7c843a14-4c87-4c7d-9ad6-5c7654bff9b5	2026-06-05 19:18:25.325715
+Response 15:	204 / No Content	2026-06-05 19:18:25.914752
+Response Body 15:
+	2026-06-05 19:18:25.914752
+
+2026-06-05 19:45:26 - Client error on GET locations: Client error: `GET https://api-lse-demo1.folio.ebsco.com/locations` resulted in a `400 Bad Request` response:
+The value for 'password' must not be empty
+
+2026-06-08 12:23:49 - Client error on GET locations: Client error: `GET https://api-lse-demo1.folio.ebsco.com/locations` resulted in a `400 Bad Request` response:
+The value for 'password' must not be empty
+
+2026-06-08 12:37:00 - Client error on GET locations: Client error: `GET https://api-lse-demo1.folio.ebsco.com/locations` resulted in a `401 Unauthorized` response:
+{"errors":[{"type":"UnauthorizedException","code":"authorization_error","message":"Unauthorized"}],"total_records":1}
+
+2026-06-08T15:39:52+00:00 - Client error on GET locations: Client error: `GET https://api-lse-demo1.folio.ebsco.com/locations` resulted in a `401 Unauthorized` response:
+{"errors":[{"type":"UnauthorizedException","code":"authorization_error","message":"Unauthorized"}],"total_records":1}
+
+2026-06-08T18:54:40+00:00 - Client error on GET locations: Client error: `GET https://api-lse-demo1.folio.ebsco.com/locations` resulted in a `404 Not Found` response:
+{
+  "message":"no Route matched with those values",
+  "request_id":"4bb0ea104f21c50ef0ec2c44cb6de030"
+}
+
+2026-06-16T13:15:52+00:00 - HTTP error on GET: locations: Client error: `GET https://api-lse-demo1.folio.ebsco.com/locations?limit=5&query=id+%3E+%22%22+and+cql.allRecords%3D1+sortBy+id+sortBy+id+sortBy+id&offset=0` resulted in a `400 Bad Request` response:
+org.folio.cql2pgjson.exception.QueryValidationException: CQL: Invalid UUID after 'id>': 
+
+2026-06-16T13:17:36+00:00 - HTTP error on GET: locations: Client error: `GET https://api-lse-demo1.folio.ebsco.com/locations?limit=5&query=id+%3E+%22%22+and+cql.allRecords%3D1+sortBy+id+sortBy+id+sortBy+id&offset=0` resulted in a `400 Bad Request` response:
+org.folio.cql2pgjson.exception.QueryValidationException: CQL: Invalid UUID after 'id>': 
+
+2026-06-16T13:56:02+00:00 - Connection error on GET: instance-storage/instances: cURL error 28: Operation timed out after 30000 milliseconds with 5050352 bytes received (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://api-lse-demo1.folio.ebsco.com/instance-storage/instances?limit=5000&offset=0&query=cql.allRecords%3D1+sortBy+id+sortBy+id
+2026-06-16T15:17:31+00:00 - HTTP error on PUT: location/094cf617-8114-457c-a4f9-7b9a546d6344: Client error: `PUT https://api-lse-demo1.folio.ebsco.com/location/094cf617-8114-457c-a4f9-7b9a546d6344?id=094cf617-8114-457c-a4f9-7b9a546d6344&name=Lorem+Circulation+Holding+Shelf+%28Staff+Area%29-&code=loremcircholding&discoveryDisplayName=Lorem+Circulation+Holding+Shelf+%28Staff+Area%29&isActive=1&institutionId=ba7fc3fe-1c7a-433e-a4cd-37ba26c1d36c&campusId=4f476eb0-af07-4483-bf96-a8fa19226915&libraryId=ee532760-20af-487b-8272-b4b067498e41&primaryServicePoint=ef313cc4-dca6-4b14-b0f9-9c08ad49b0e8&servicePointIds%5B0%5D=ef313cc4-dca6-4b14-b0f9-9c08ad49b0e8&isShadow=0&metadata%5BcreatedDate%5D=2025-05-12T19%3A51%3A17.415%2B00%3A00&metadata%5BcreatedByUserId%5D=9737156f-3309-44f7-bd3e-38e8b73091de&metadata%5BupdatedDate%5D=2025-05-12T19%3A51%3A17.415%2B00%3A00&metadata%5BupdatedByUserId%5D=9737156f-3309-44f7-bd3e-38e8b73091de&limit=5000&offset=0&query=cql.allRecords%3D1+sortBy+id+sortBy+id` resulted in a `404 Not Found` response:
+{
+  "message":"no Route matched with those values",
+  "request_id":"22ea356f4005ec22fe56793bfa436747"
+}
+
+2026-06-16T15:18:15+00:00 - HTTP error on PUT: locations/094cf617-8114-457c-a4f9-7b9a546d6344: Client error: `PUT https://api-lse-demo1.folio.ebsco.com/locations/094cf617-8114-457c-a4f9-7b9a546d6344?id=094cf617-8114-457c-a4f9-7b9a546d6344&name=Lorem+Circulation+Holding+Shelf+%28Staff+Area%29-&code=loremcircholding&discoveryDisplayName=Lorem+Circulation+Holding+Shelf+%28Staff+Area%29&isActive=1&institutionId=ba7fc3fe-1c7a-433e-a4cd-37ba26c1d36c&campusId=4f476eb0-af07-4483-bf96-a8fa19226915&libraryId=ee532760-20af-487b-8272-b4b067498e41&primaryServicePoint=ef313cc4-dca6-4b14-b0f9-9c08ad49b0e8&servicePointIds%5B0%5D=ef313cc4-dca6-4b14-b0f9-9c08ad49b0e8&isShadow=0&metadata%5BcreatedDate%5D=2025-05-12T19%3A51%3A17.415%2B00%3A00&metadata%5BcreatedByUserId%5D=9737156f-3309-44f7-bd3e-38e8b73091de&metadata%5BupdatedDate%5D=2025-05-12T19%3A51%3A17.415%2B00%3A00&metadata%5BupdatedByUserId%5D=9737156f-3309-44f7-bd3e-38e8b73091de&limit=5000&offset=0&query=cql.allRecords%3D1+sortBy+id+sortBy+id` resulted in a `400 Bad Request` response:
+HV000116: The object to be validated must not be null.
+
+2026-06-16T15:20:19+00:00 - HTTP error on PUT: locations/094cf617-8114-457c-a4f9-7b9a546d6344: Client error: `PUT https://api-lse-demo1.folio.ebsco.com/locations/094cf617-8114-457c-a4f9-7b9a546d6344?id=094cf617-8114-457c-a4f9-7b9a546d6344&name=Lorem+Circulation+Holding+Shelf+%28Staff+Area%29-&code=loremcircholding&discoveryDisplayName=Lorem+Circulation+Holding+Shelf+%28Staff+Area%29&isActive=1&institutionId=ba7fc3fe-1c7a-433e-a4cd-37ba26c1d36c&campusId=4f476eb0-af07-4483-bf96-a8fa19226915&libraryId=ee532760-20af-487b-8272-b4b067498e41&primaryServicePoint=ef313cc4-dca6-4b14-b0f9-9c08ad49b0e8&servicePointIds%5B0%5D=ef313cc4-dca6-4b14-b0f9-9c08ad49b0e8&isShadow=0&metadata%5BcreatedDate%5D=2025-05-12T19%3A51%3A17.415%2B00%3A00&metadata%5BcreatedByUserId%5D=9737156f-3309-44f7-bd3e-38e8b73091de&metadata%5BupdatedDate%5D=2025-05-12T19%3A51%3A17.415%2B00%3A00&metadata%5BupdatedByUserId%5D=9737156f-3309-44f7-bd3e-38e8b73091de&limit=5000&offset=0&query=cql.allRecords%3D1+sortBy+id+sortBy+id` resulted in a `400 Bad Request` response:
+HV000116: The object to be validated must not be null.
+
+2026-06-16T15:22:04+00:00 - HTTP error on PUT: locations/094cf617-8114-457c-a4f9-7b9a546d6344: Client error: `PUT https://api-lse-demo1.folio.ebsco.com/locations/094cf617-8114-457c-a4f9-7b9a546d6344?id=094cf617-8114-457c-a4f9-7b9a546d6344&name=Lorem+Circulation+Holding+Shelf+%28Staff+Area%29-&code=loremcircholding&discoveryDisplayName=Lorem+Circulation+Holding+Shelf+%28Staff+Area%29&isActive=1&institutionId=ba7fc3fe-1c7a-433e-a4cd-37ba26c1d36c&campusId=4f476eb0-af07-4483-bf96-a8fa19226915&libraryId=ee532760-20af-487b-8272-b4b067498e41&primaryServicePoint=ef313cc4-dca6-4b14-b0f9-9c08ad49b0e8&servicePointIds%5B0%5D=ef313cc4-dca6-4b14-b0f9-9c08ad49b0e8&isShadow=0&metadata%5BcreatedDate%5D=2025-05-12T19%3A51%3A17.415%2B00%3A00&metadata%5BcreatedByUserId%5D=9737156f-3309-44f7-bd3e-38e8b73091de&metadata%5BupdatedDate%5D=2025-05-12T19%3A51%3A17.415%2B00%3A00&metadata%5BupdatedByUserId%5D=9737156f-3309-44f7-bd3e-38e8b73091de&limit=5000&offset=0&query=cql.allRecords%3D1+sortBy+id+sortBy+id` resulted in a `400 Bad Request` response:
+HV000116: The object to be validated must not be null.
+
+2026-06-16T15:23:58+00:00 - HTTP error on GET: locations/094cf617-8114-457c-a4f9-7b9a546d6344: Client error: `GET https://api-lse-demo1.folio.ebsco.com/locations/094cf617-8114-457c-a4f9-7b9a546d6344?limit=5000&offset=0&query=cql.allRecords%3D1+sortBy+id+sortBy+id` resulted in a `401 Unauthorized` response:
+{"errors":[{"type":"UnauthorizedException","code":"authorization_error","message":"Unauthorized"}],"total_records":1}
+
+2026-06-16T17:20:15+00:00 - HTTP error on GET: locations: Client error: `GET https://api-lse-demo1.folio.ebsco.com/locations?limit=5000&offset=0&query=094cf617-8114-457c-a4f9-7b9a546d6344` resulted in a `400 Bad Request` response:
+org.folio.cql2pgjson.exception.QueryValidationException: cql.serverChoice requested, but no serverChoiceIndexes defined.
+
+2026-06-16T17:30:31+00:00 - HTTP error on GET: instance-storage/instances: Client error: `GET https://api-lse-demo1.folio.ebsco.com/instance-storage/instances?limit=5000&query=&offset=0` resulted in a `400 Bad Request` response:
+org.folio.cql2pgjson.exception.QueryValidationException: org.z3950.zing.cql.CQLParseException: expected index or term, g (truncated...)
+
+2026-06-16T17:32:31+00:00 - HTTP error on GET: instance-storage/instances: Client error: `GET https://api-lse-demo1.folio.ebsco.com/instance-storage/instances?limit=5000&query=&offset=0` resulted in a `400 Bad Request` response:
+org.folio.cql2pgjson.exception.QueryValidationException: org.z3950.zing.cql.CQLParseException: expected index or term, g (truncated...)
+
+2026-06-16T17:40:22+00:00 - HTTP error on GET: instance-storage/instances: Client error: `GET https://api-lse-demo1.folio.ebsco.com/instance-storage/instances?limit=5000&query=&offset=0` resulted in a `400 Bad Request` response:
+org.folio.cql2pgjson.exception.QueryValidationException: org.z3950.zing.cql.CQLParseException: expected index or term, g (truncated...)
+
+2026-06-16T17:57:00+00:00 - HTTP error on GET: instance-storage/instances: Client error: `GET https://api-lse-demo1.folio.ebsco.com/instance-storage/instances?limit=5000&query=&offset=0` resulted in a `400 Bad Request` response:
+org.folio.cql2pgjson.exception.QueryValidationException: org.z3950.zing.cql.CQLParseException: expected index or term, g (truncated...)
+
+2026-06-16T17:57:43+00:00 - HTTP error on GET: instance-storage/instances: Client error: `GET https://api-lse-demo1.folio.ebsco.com/instance-storage/instances?limit=5000&query=&offset=0` resulted in a `400 Bad Request` response:
+org.folio.cql2pgjson.exception.QueryValidationException: org.z3950.zing.cql.CQLParseException: expected index or term, g (truncated...)
+
+2026-06-16T18:59:59+00:00 - HTTP error on PUT: locations/094cf617-8114-457c-a4f9-7b9a546d6344: Client error: `PUT https://api-lse-demo1.folio.ebsco.com/locations/094cf617-8114-457c-a4f9-7b9a546d6344?id=094cf617-8114-457c-a4f9-7b9a546d6344&name=Lorem+Circulation+Holding+Shelf+%28Staff+Area%29-&code=loremcircholding&discoveryDisplayName=Lorem+Circulation+Holding+Shelf+%28Staff+Area%29&isActive=1&institutionId=ba7fc3fe-1c7a-433e-a4cd-37ba26c1d36c&campusId=4f476eb0-af07-4483-bf96-a8fa19226915&libraryId=ee532760-20af-487b-8272-b4b067498e41&primaryServicePoint=ef313cc4-dca6-4b14-b0f9-9c08ad49b0e8&servicePointIds%5B0%5D=ef313cc4-dca6-4b14-b0f9-9c08ad49b0e8&isShadow=0&metadata%5BcreatedDate%5D=2025-05-12T19%3A51%3A17.415%2B00%3A00&metadata%5BcreatedByUserId%5D=9737156f-3309-44f7-bd3e-38e8b73091de&metadata%5BupdatedDate%5D=2025-05-12T19%3A51%3A17.415%2B00%3A00&metadata%5BupdatedByUserId%5D=9737156f-3309-44f7-bd3e-38e8b73091de` resulted in a `400 Bad Request` response:
+HV000116: The object to be validated must not be null.
+
+2026-06-16T19:00:38+00:00 - HTTP error on PUT: locations/094cf617-8114-457c-a4f9-7b9a546d6344: Client error: `PUT https://api-lse-demo1.folio.ebsco.com/locations/094cf617-8114-457c-a4f9-7b9a546d6344?id=094cf617-8114-457c-a4f9-7b9a546d6344&name=Lorem+Circulation+Holding+Shelf+%28Staff+Area%29-&code=loremcircholding&discoveryDisplayName=Lorem+Circulation+Holding+Shelf+%28Staff+Area%29&isActive=1&institutionId=ba7fc3fe-1c7a-433e-a4cd-37ba26c1d36c&campusId=4f476eb0-af07-4483-bf96-a8fa19226915&libraryId=ee532760-20af-487b-8272-b4b067498e41&primaryServicePoint=ef313cc4-dca6-4b14-b0f9-9c08ad49b0e8&servicePointIds%5B0%5D=ef313cc4-dca6-4b14-b0f9-9c08ad49b0e8&isShadow=0&metadata%5BcreatedDate%5D=2025-05-12T19%3A51%3A17.415%2B00%3A00&metadata%5BcreatedByUserId%5D=9737156f-3309-44f7-bd3e-38e8b73091de&metadata%5BupdatedDate%5D=2025-05-12T19%3A51%3A17.415%2B00%3A00&metadata%5BupdatedByUserId%5D=9737156f-3309-44f7-bd3e-38e8b73091de` resulted in a `400 Bad Request` response:
+HV000116: The object to be validated must not be null.
+
+2026-06-16T19:09:17+00:00 - HTTP error on PUT: locations/094cf617-8114-457c-a4f9-7b9a546d6344: Client error: `PUT https://api-lse-demo1.folio.ebsco.com/locations/094cf617-8114-457c-a4f9-7b9a546d6344?id=094cf617-8114-457c-a4f9-7b9a546d6344&name=Lorem+Circulation+Holding+Shelf+%28Staff+Area%29-&code=loremcircholding&discoveryDisplayName=Lorem+Circulation+Holding+Shelf+%28Staff+Area%29&isActive=1&institutionId=ba7fc3fe-1c7a-433e-a4cd-37ba26c1d36c&campusId=4f476eb0-af07-4483-bf96-a8fa19226915&libraryId=ee532760-20af-487b-8272-b4b067498e41&primaryServicePoint=ef313cc4-dca6-4b14-b0f9-9c08ad49b0e8&servicePointIds%5B0%5D=ef313cc4-dca6-4b14-b0f9-9c08ad49b0e8&isShadow=0&metadata%5BcreatedDate%5D=2025-05-12T19%3A51%3A17.415%2B00%3A00&metadata%5BcreatedByUserId%5D=9737156f-3309-44f7-bd3e-38e8b73091de&metadata%5BupdatedDate%5D=2026-06-16T19%3A05%3A29.805%2B00%3A00&metadata%5BupdatedByUserId%5D=db700e64-32f9-4bfe-b00a-a65bb35916c5` resulted in a `400 Bad Request` response:
+HV000116: The object to be validated must not be null.
+
+2026-06-16T19:11:12+00:00 - HTTP error on PUT: locations/094cf617-8114-457c-a4f9-7b9a546d6344: Client error: `PUT https://api-lse-demo1.folio.ebsco.com/locations/094cf617-8114-457c-a4f9-7b9a546d6344?id=094cf617-8114-457c-a4f9-7b9a546d6344&name=Lorem+Circulation+Holding+Shelf+%28Staff+Area%29-&code=loremcircholding&discoveryDisplayName=Lorem+Circulation+Holding+Shelf+%28Staff+Area%29&isActive=1&institutionId=ba7fc3fe-1c7a-433e-a4cd-37ba26c1d36c&campusId=4f476eb0-af07-4483-bf96-a8fa19226915&libraryId=ee532760-20af-487b-8272-b4b067498e41&primaryServicePoint=ef313cc4-dca6-4b14-b0f9-9c08ad49b0e8&servicePointIds%5B0%5D=ef313cc4-dca6-4b14-b0f9-9c08ad49b0e8&isShadow=0&metadata%5BcreatedDate%5D=2025-05-12T19%3A51%3A17.415%2B00%3A00&metadata%5BcreatedByUserId%5D=9737156f-3309-44f7-bd3e-38e8b73091de&metadata%5BupdatedDate%5D=2026-06-16T19%3A05%3A29.805%2B00%3A00&metadata%5BupdatedByUserId%5D=db700e64-32f9-4bfe-b00a-a65bb35916c5` resulted in a `400 Bad Request` response:
+HV000116: The object to be validated must not be null.
+
+2026-06-16T19:12:45+00:00 - HTTP error on PUT: locations/094cf617-8114-457c-a4f9-7b9a546d6344: Client error: `PUT https://api-lse-demo1.folio.ebsco.com/locations/094cf617-8114-457c-a4f9-7b9a546d6344?id=094cf617-8114-457c-a4f9-7b9a546d6344&name=Lorem+Circulation+Holding+Shelf+%28Staff+Area%29-&code=loremcircholding&discoveryDisplayName=Lorem+Circulation+Holding+Shelf+%28Staff+Area%29&isActive=1&institutionId=ba7fc3fe-1c7a-433e-a4cd-37ba26c1d36c&campusId=4f476eb0-af07-4483-bf96-a8fa19226915&libraryId=ee532760-20af-487b-8272-b4b067498e41&primaryServicePoint=ef313cc4-dca6-4b14-b0f9-9c08ad49b0e8&servicePointIds%5B0%5D=ef313cc4-dca6-4b14-b0f9-9c08ad49b0e8&isShadow=0&metadata%5BcreatedDate%5D=2025-05-12T19%3A51%3A17.415%2B00%3A00&metadata%5BcreatedByUserId%5D=9737156f-3309-44f7-bd3e-38e8b73091de&metadata%5BupdatedDate%5D=2026-06-16T19%3A05%3A29.805%2B00%3A00&metadata%5BupdatedByUserId%5D=db700e64-32f9-4bfe-b00a-a65bb35916c5` resulted in a `400 Bad Request` response:
+HV000116: The object to be validated must not be null.
+
+2026-06-16T19:13:45+00:00 - HTTP error on PUT: locations/094cf617-8114-457c-a4f9-7b9a546d6344: Client error: `PUT https://api-lse-demo1.folio.ebsco.com/locations/094cf617-8114-457c-a4f9-7b9a546d6344?id=094cf617-8114-457c-a4f9-7b9a546d6344&name=Lorem+Circulation+Holding+Shelf+%28Staff+Area%29-&code=loremcircholding&discoveryDisplayName=Lorem+Circulation+Holding+Shelf+%28Staff+Area%29&isActive=1&institutionId=ba7fc3fe-1c7a-433e-a4cd-37ba26c1d36c&campusId=4f476eb0-af07-4483-bf96-a8fa19226915&libraryId=ee532760-20af-487b-8272-b4b067498e41&primaryServicePoint=ef313cc4-dca6-4b14-b0f9-9c08ad49b0e8&servicePointIds%5B0%5D=ef313cc4-dca6-4b14-b0f9-9c08ad49b0e8&isShadow=0&metadata%5BcreatedDate%5D=2025-05-12T19%3A51%3A17.415%2B00%3A00&metadata%5BcreatedByUserId%5D=9737156f-3309-44f7-bd3e-38e8b73091de&metadata%5BupdatedDate%5D=2026-06-16T19%3A05%3A29.805%2B00%3A00&metadata%5BupdatedByUserId%5D=db700e64-32f9-4bfe-b00a-a65bb35916c5` resulted in a `400 Bad Request` response:
+HV000116: The object to be validated must not be null.
+
+2026-06-16T19:38:21+00:00 - HTTP error on PUT: locations/094cf617-8114-457c-a4f9-7b9a546d6344: Client error: `PUT https://api-lse-demo1.folio.ebsco.com/locations/094cf617-8114-457c-a4f9-7b9a546d6344` resulted in a `400 Bad Request` response:
+HV000116: The object to be validated must not be null.
+
+2026-06-16T19:40:55+00:00 - HTTP error on PUT: locations/094cf617-8114-457c-a4f9-7b9a546d6344: Client error: `PUT https://api-lse-demo1.folio.ebsco.com/locations/094cf617-8114-457c-a4f9-7b9a546d6344` resulted in a `400 Bad Request` response:
+HV000116: The object to be validated must not be null.
+
+2026-06-16T20:28:50+00:00 - HTTP error on DELETE: locations/39f9fbe9-e9be-437d-a266-7fe27b2cc965: Client error: `DELETE https://api-lse-demo1.folio.ebsco.com/locations/39f9fbe9-e9be-437d-a266-7fe27b2cc965` resulted in a `400 Bad Request` response:
+Accept header must be ["text/plain"] for this request, but it is "application/json", can not send */*
+
+2026-06-16T20:31:53+00:00 - HTTP error on DELETE: locations/39f9fbe9-e9be-437d-a266-7fe27b2cc965: Client error: `DELETE https://api-lse-demo1.folio.ebsco.com/locations/39f9fbe9-e9be-437d-a266-7fe27b2cc965` resulted in a `404 Not Found` response:
+Not found
+
+2026-06-16T20:39:52+00:00 - HTTP error on PATCH: item-storage/items/36f5a73c-6971-48cb-aa86-b6a7ac9c1e38: Client error: `PATCH https://api-lse-demo1.folio.ebsco.com/item-storage/items/36f5a73c-6971-48cb-aa86-b6a7ac9c1e38` resulted in a `404 Not Found` response:
+no Route matched with those values
+request_id: 4b98b35f06c236331e365d79877e5966
+
+
+2026-06-16T20:40:51+00:00 - HTTP error on PATCH: specification-storage/specifications/6eefa4c6-bbf7-4845-ad82-de7fc4abd0e3/rules/7c843a14-4c87-4c7d-9ad6-5c7654bff9b5: Client error: `PATCH https://api-lse-demo1.folio.ebsco.com/specification-storage/specifications/6eefa4c6-bbf7-4845-ad82-de7fc4abd0e3/rules/7c843a14-4c87-4c7d-9ad6-5c7654bff9b5` resulted in a `406 Not Acceptable` response
+2026-06-16T20:46:25+00:00 - HTTP error on PATCH: specification-storage/specifications/6eefa4c6-bbf7-4845-ad82-de7fc4abd0e3/rules/7c843a14-4c87-4c7d-9ad6-5c7654bff9b5: Client error: `PATCH https://api-lse-demo1.folio.ebsco.com/specification-storage/specifications/6eefa4c6-bbf7-4845-ad82-de7fc4abd0e3/rules/7c843a14-4c87-4c7d-9ad6-5c7654bff9b5` resulted in a `406 Not Acceptable` response
+2026-06-16T20:48:24+00:00 - HTTP error on PATCH: specification-storage/specifications/6eefa4c6-bbf7-4845-ad82-de7fc4abd0e3/rules/7c843a14-4c87-4c7d-9ad6-5c7654bff9b5: Client error: `PATCH https://api-lse-demo1.folio.ebsco.com/specification-storage/specifications/6eefa4c6-bbf7-4845-ad82-de7fc4abd0e3/rules/7c843a14-4c87-4c7d-9ad6-5c7654bff9b5` resulted in a `406 Not Acceptable` response
+2026-06-16T20:51:13+00:00 - HTTP error on PATCH: specification-storage/specifications/6eefa4c6-bbf7-4845-ad82-de7fc4abd0e3/rules/7c843a14-4c87-4c7d-9ad6-5c7654bff9b5: Client error: `PATCH https://api-lse-demo1.folio.ebsco.com/specification-storage/specifications/6eefa4c6-bbf7-4845-ad82-de7fc4abd0e3/rules/7c843a14-4c87-4c7d-9ad6-5c7654bff9b5` resulted in a `406 Not Acceptable` response
+2026-06-16T20:54:05+00:00 - HTTP error on PATCH: specification-storage/specifications/6eefa4c6-bbf7-4845-ad82-de7fc4abd0e3/rules/7c843a14-4c87-4c7d-9ad6-5c7654bff9b5: Server error: `PATCH https://api-lse-demo1.folio.ebsco.com/specification-storage/specifications/6eefa4c6-bbf7-4845-ad82-de7fc4abd0e3/rules/7c843a14-4c87-4c7d-9ad6-5c7654bff9b5` resulted in a `500 Internal Server Error` response:
+{"errors":[{"message":"Unexpected error: Content-Type is not supported","type":"unexpected","code":"500","parameters":[] (truncated...)
+
+2026-06-17T13:53:12+00:00 - HTTP error on GET: patronGroups: Client error: `GET https://api-lse-demo1.folio.ebsco.com/patronGroups?limit=5000&offset=0` resulted in a `404 Not Found` response:
+{
+  "message":"no Route matched with those values",
+  "request_id":"4c2bbf56725bb06edee02224427aa611"
+}
+
+2026-06-17T20:28:56+00:00 - HTTP error on POST: data-export/file-definitions: Client error: `POST https://api-lse-demo1.folio.ebsco.com/data-export/file-definitions` resulted in a `422 Unprocessable Entity` response:
+Incorrect file extension of test.txt
+
+2026-06-17T20:29:50+00:00 - HTTP error on POST: data-export/file-definitions: Server error: `POST https://api-lse-demo1.folio.ebsco.com/data-export/file-definitions` resulted in a `500 Internal Server Error` response
+2026-06-17T21:34:44+00:00 - HTTP error on POST: data-export/file-definitions: Server error: `POST https://api-lse-demo1.folio.ebsco.com/data-export/file-definitions` resulted in a `500 Internal Server Error` response
+2026-06-17T21:36:19+00:00 - HTTP error on POST: data-export/file-definitions: Server error: `POST https://api-lse-demo1.folio.ebsco.com/data-export/file-definitions` resulted in a `500 Internal Server Error` response
+2026-06-17T21:38:39+00:00 - HTTP error on POST: data-export/file-definitions: Server error: `POST https://api-lse-demo1.folio.ebsco.com/data-export/file-definitions` resulted in a `500 Internal Server Error` response
+2026-06-17T21:41:15+00:00 - HTTP error on POST: data-export/file-definitions: Server error: `POST https://api-lse-demo1.folio.ebsco.com/data-export/file-definitions` resulted in a `500 Internal Server Error` response
+2026-06-17T21:41:35+00:00 - HTTP error on POST: data-export/file-definitions: Server error: `POST https://api-lse-demo1.folio.ebsco.com/data-export/file-definitions` resulted in a `500 Internal Server Error` response
+2026-06-17T21:41:56+00:00 - HTTP error on POST: data-export/file-definitions: Server error: `POST https://api-lse-demo1.folio.ebsco.com/data-export/file-definitions` resulted in a `500 Internal Server Error` response
+2026-06-17T21:49:41+00:00 - HTTP error on POST: data-export/file-definitions: Server error: `POST https://api-lse-demo1.folio.ebsco.com/data-export/file-definitions` resulted in a `500 Internal Server Error` response
+2026-06-17T21:53:51+00:00 - HTTP error on POST: data-export/file-definitions: Server error: `POST https://api-lse-demo1.folio.ebsco.com/data-export/file-definitions` resulted in a `500 Internal Server Error` response
+2026-06-17T21:56:03+00:00 - HTTP error on POST: data-export/file-definitions: Server error: `POST https://api-lse-demo1.folio.ebsco.com/data-export/file-definitions` resulted in a `500 Internal Server Error` response
+2026-06-21T19:03:40+00:00 - HTTP error on POST: data-export/file-definitions: Server error: `POST https://api-lse-demo1.folio.ebsco.com/data-export/file-definitions` resulted in a `500 Internal Server Error` response
+2026-06-21T19:04:35+00:00 - HTTP error on POST: data-export/file-definitions: Client error: `POST https://api-lse-demo1.folio.ebsco.com/data-export/file-definitions` resulted in a `400 Bad Request` response:
+Invalid date format for payload
+
+2026-06-21T19:06:17+00:00 - HTTP error on POST: data-export/file-definitions: Client error: `POST https://api-lse-demo1.folio.ebsco.com/data-export/file-definitions` resulted in a `400 Bad Request` response:
+Invalid date format for payload
+
+2026-06-21T19:07:54+00:00 - HTTP error on POST: data-export/file-definitions: Server error: `POST https://api-lse-demo1.folio.ebsco.com/data-export/file-definitions` resulted in a `500 Internal Server Error` response
+2026-06-21T19:11:32+00:00 - HTTP error on POST: data-export/file-definitions: Server error: `POST https://api-lse-demo1.folio.ebsco.com/data-export/file-definitions` resulted in a `500 Internal Server Error` response
+2026-06-21T19:12:04+00:00 - HTTP error on POST: data-export/file-definitions: Server error: `POST https://api-lse-demo1.folio.ebsco.com/data-export/file-definitions` resulted in a `500 Internal Server Error` response
+2026-06-21T19:13:19+00:00 - HTTP error on POST: data-export/file-definitions: Server error: `POST https://api-lse-demo1.folio.ebsco.com/data-export/file-definitions` resulted in a `500 Internal Server Error` response
+2026-06-21T19:14:06+00:00 - HTTP error on POST: data-export/file-definitions: Server error: `POST https://api-lse-demo1.folio.ebsco.com/data-export/file-definitions` resulted in a `500 Internal Server Error` response
+2026-06-21T19:15:29+00:00 - HTTP error on POST: data-export/file-definitions: Server error: `POST https://api-lse-demo1.folio.ebsco.com/data-export/file-definitions` resulted in a `500 Internal Server Error` response
+2026-06-21T20:02:43+00:00 - HTTP error on POST: data-export/file-definitions: Server error: `POST https://api-lse-demo1.folio.ebsco.com/data-export/file-definitions` resulted in a `500 Internal Server Error` response
+2026-06-21T20:04:08+00:00 - HTTP error on POST: data-export/file-definitions: Server error: `POST https://api-lse-demo1.folio.ebsco.com/data-export/file-definitions` resulted in a `500 Internal Server Error` response
+2026-06-21T20:05:59+00:00 - HTTP error on POST: data-export/file-definitions: Server error: `POST https://api-lse-demo1.folio.ebsco.com/data-export/file-definitions` resulted in a `500 Internal Server Error` response
+2026-06-21T20:08:39+00:00 - HTTP error on POST: data-export/file-definitions: Server error: `POST https://api-lse-demo1.folio.ebsco.com/data-export/file-definitions` resulted in a `500 Internal Server Error` response
+2026-06-21T20:10:04+00:00 - HTTP error on POST: data-export/file-definitions: Server error: `POST https://api-lse-demo1.folio.ebsco.com/data-export/file-definitions` resulted in a `500 Internal Server Error` response
+2026-06-21T20:30:15+00:00 - HTTP error on POST: data-export/file-definitions: Server error: `POST https://api-lse-demo1.folio.ebsco.com/data-export/file-definitions` resulted in a `500 Internal Server Error` response
+2026-06-21T20:35:26+00:00 - HTTP error on POST: data-export/file-definitions: Server error: `POST https://api-lse-demo1.folio.ebsco.com/data-export/file-definitions` resulted in a `500 Internal Server Error` response
+2026-06-21T20:37:59+00:00 - HTTP error on POST: data-export/file-definitions: Server error: `POST https://api-lse-demo1.folio.ebsco.com/data-export/file-definitions` resulted in a `500 Internal Server Error` response
+2026-06-21T20:39:34+00:00 - HTTP error on POST: data-export/file-definitions: Client error: `POST https://api-lse-demo1.folio.ebsco.com/data-export/file-definitions` resulted in a `415 Unsupported Media Type` response
+2026-06-21T20:40:38+00:00 - HTTP error on POST: data-export/file-definitions: Server error: `POST https://api-lse-demo1.folio.ebsco.com/data-export/file-definitions` resulted in a `500 Internal Server Error` response
+2026-06-21T20:42:35+00:00 - HTTP error on POST: data-export/file-definitions: Server error: `POST https://api-lse-demo1.folio.ebsco.com/data-export/file-definitions` resulted in a `500 Internal Server Error` response
+2026-06-21T20:43:06+00:00 - HTTP error on POST: data-export/file-definitions: Server error: `POST https://api-lse-demo1.folio.ebsco.com/data-export/file-definitions` resulted in a `500 Internal Server Error` response
+2026-06-21T21:02:45+00:00 - HTTP error on GET: data-export/job-executions/456e395e-f1f4-4dcc-8773-50cb065e7c2d: Client error: `GET https://api-lse-demo1.folio.ebsco.com/data-export/job-executions/456e395e-f1f4-4dcc-8773-50cb065e7c2d?limit=5000&offset=0` resulted in a `404 Not Found` response:
+{
+  "message":"no Route matched with those values",
+  "request_id":"6b1dd47fa5cb602e870b8a7f429ce914"
+}
+
+2026-06-21T21:04:21+00:00 - HTTP error on GET: data-export/job-executions/5ca76149-96ec-4f72-b01d-5edd20cc5b1c: Client error: `GET https://api-lse-demo1.folio.ebsco.com/data-export/job-executions/5ca76149-96ec-4f72-b01d-5edd20cc5b1c?limit=5000&offset=0` resulted in a `404 Not Found` response:
+{
+  "message":"no Route matched with those values",
+  "request_id":"9205b34ddec64829bd0f980c4377e410"
+}
+
+2026-06-21T21:13:46+00:00 - HTTP error on POST: locations: Client error: `POST https://api-lse-demo1.folio.ebsco.com/locations` resulted in a `422 Unprocessable Entity` response:
+{
+  "errors" : [ {
+    "message" : "lower(f_unaccent(jsonb ->> 'code'::text)) value already exists in table location: te (truncated...)
+
+2026-06-21T21:15:08+00:00 - HTTP error on POST: locations: Client error: `POST https://api-lse-demo1.folio.ebsco.com/locations` resulted in a `422 Unprocessable Entity` response:
+{
+  "errors" : [ {
+    "message" : "lower(f_unaccent(jsonb ->> 'code'::text)) value already exists in table location: te (truncated...)
+
+2026-07-15T14:18:58+00:00 - HTTP error on POST: data-export/file-definitions: Client error: `POST https://api-lse-demo1.folio.ebsco.com/data-export/file-definitions` resulted in a `422 Unprocessable Entity` response:
+Incorrect file extension of false
+
+2026-07-15T14:20:12+00:00 - HTTP error on POST: data-export/file-definitions: Client error: `POST https://api-lse-demo1.folio.ebsco.com/data-export/file-definitions` resulted in a `422 Unprocessable Entity` response:
+Incorrect file extension of false
+
+2026-07-15T14:21:01+00:00 - HTTP error on POST: data-export/file-definitions: Client error: `POST https://api-lse-demo1.folio.ebsco.com/data-export/file-definitions` resulted in a `422 Unprocessable Entity` response:
+Incorrect file extension of false
+
+2026-07-15T14:23:12+00:00 - HTTP error on POST: data-export/file-definitions: Client error: `POST https://api-lse-demo1.folio.ebsco.com/data-export/file-definitions` resulted in a `422 Unprocessable Entity` response:
+Incorrect file extension of false
+
+2026-07-15T15:41:44+00:00 - GET: locations/
+2026-07-15T15:41:45+00:00 - GET: locations/
+2026-07-15T15:43:54+00:00 - GET: locations/2026-07-15T15:43:54+00:00
+2026-07-15T15:43:55+00:00 - GET: locations/2026-07-15T15:43:55+00:00
+2026-07-15T16:03:55+00:00 - Query2GET: locations/
+2026-07-15T16:03:56+00:00 - Query3GET: locations/
+2026-07-15T16:05:52+00:00 - Query 1GET: locations/
+2026-07-15T16:05:53+00:00 - Query 2GET: locations/
+2026-07-15T16:06:19+00:00 - Query 1GET: locations/
+2026-07-15T16:06:21+00:00 - Query 2GET: locations/
+2026-07-15 11:12:39.044010	 Query 1 -  GET: locations/
+2026-07-15 11:12:39.912249	 Query 2 -  GET: locations/
+2026-07-15 11:14:28.229312 America/Chicago	 Query 1 -  GET: locations/
+2026-07-15 11:14:29.071420 America/Chicago	 Query 2 -  GET: locations/
+2026-07-15 11:19:19.439225 America/Chicago	 Query 1 -  GET: locations/?limit=5000&offset=0
+2026-07-15 11:19:20.755308 America/Chicago	 Query 2 -  GET: locations/?limit=5000&offset=0
+2026-07-15 11:20:54.563003 America/Chicago	 Query 1 -  GET: locations?limit=5000&offset=0
+2026-07-15 11:20:55.807991 America/Chicago	 Query 2 -  GET: locations?limit=5000&offset=0
+2026-07-15 11:23:56.641817 America/Chicago	 Query 1 -  GET: locations?limit=5000&offset=0
+2026-07-15 11:23:58.103044 America/Chicago	 Query 2 -  GET: locations?limit=5000&offset=0
+2026-07-15 11:23:59.049990 America/Chicago	 Query 3 -  GET: material-types?limit=5000&offset=0
+2026-07-15 11:23:59.269413 America/Chicago	 Query 4 -  GET: loan-types?limit=5000&offset=0
+2026-07-15 11:23:59.477073 America/Chicago	 Query 5 -  GET: departments?limit=5000&offset=0
+2026-07-15 11:23:59.705199 America/Chicago	 Query 6 -  GET: addresstypes?limit=5000&offset=0
+2026-07-15 11:23:59.935553 America/Chicago	 Query 7 -  GET: groups?limit=5000&offset=0
+2026-07-15 11:24:00.130107 America/Chicago	 Query 8 -  GET: service-points?limit=5000&offset=0
+2026-07-15 11:24:00.356974 America/Chicago	 Query 9 -  GET: _/proxy/tenants/fs00001208/modules?limit=5000&offset=0
+2026-07-15 11:24:00.883616 America/Chicago	 Query 10 -  GET: _/proxy/tenants/fs00001208/modules?limit=5000&offset=0
+2026-07-15 11:24:01.268360 America/Chicago	 Query 11 -  GET: custom-fields?limit=5000&offset=0
+2026-07-15 11:24:01.500547 America/Chicago	 Query 12 -  GET: _/proxy/tenants/fs00001208/modules?limit=5000&offset=0
+2026-07-15 11:24:01.784888 America/Chicago	 Query 13 -  GET: custom-fields?limit=5000&offset=0
+2026-07-15 11:26:56.648162 America/Chicago	 Query 1 -  GET: locations?limit=5000&offset=0
+2026-07-15 11:26:57.997776 America/Chicago	 Query 2 -  GET: locations?limit=5000&offset=0
+2026-07-15 11:26:58.762885 America/Chicago	 Query 3 -  GET: material-types?limit=5000&offset=0
+2026-07-15 11:26:58.972976 America/Chicago	 Query 4 -  GET: loan-types?limit=5000&offset=0
+2026-07-15 11:26:59.186764 America/Chicago	 Query 5 -  GET: departments?limit=5000&offset=0
+2026-07-15 11:26:59.394286 America/Chicago	 Query 6 -  GET: addresstypes?limit=5000&offset=0
+2026-07-15 11:26:59.593990 America/Chicago	 Query 7 -  GET: groups?limit=5000&offset=0
+2026-07-15 11:26:59.771130 America/Chicago	 Query 8 -  GET: service-points?limit=5000&offset=0
+2026-07-15 11:26:59.971715 America/Chicago	 Query 9 -  GET: _/proxy/tenants/fs00001208/modules?limit=5000&offset=0
+2026-07-15 11:27:00.308950 America/Chicago	 Query 10 -  GET: _/proxy/tenants/fs00001208/modules?limit=5000&offset=0
+2026-07-15 11:27:00.502801 America/Chicago	 Query 11 -  GET: custom-fields?limit=5000&offset=0
+2026-07-15 11:27:00.701722 America/Chicago	 Query 12 -  GET: _/proxy/tenants/fs00001208/modules?limit=5000&offset=0
+2026-07-15 11:27:00.914466 America/Chicago	 Query 13 -  GET: custom-fields?limit=5000&offset=0
+2026-07-15 11:27:27.485421 America/Chicago	 Query 1 -  GET: locations?limit=5000&offset=0
+2026-07-15 11:27:28.771376 America/Chicago	 Query 2 -  GET: locations?limit=5000&offset=0
+2026-07-15 11:27:29.455144 America/Chicago	 Query 3 -  GET: material-types?limit=5000&offset=0
+2026-07-15 11:27:29.654121 America/Chicago	 Query 4 -  GET: loan-types?limit=5000&offset=0
+2026-07-15 11:27:29.844196 America/Chicago	 Query 5 -  GET: departments?limit=5000&offset=0
+2026-07-15 11:27:30.040964 America/Chicago	 Query 6 -  GET: addresstypes?limit=5000&offset=0
+2026-07-15 11:27:30.250310 America/Chicago	 Query 7 -  GET: groups?limit=5000&offset=0
+2026-07-15 11:27:30.467781 America/Chicago	 Query 8 -  GET: service-points?limit=5000&offset=0
+2026-07-15 11:27:30.669809 America/Chicago	 Query 9 -  GET: _/proxy/tenants/fs00001208/modules?limit=5000&offset=0
+2026-07-15 11:27:30.882442 America/Chicago	 Query 10 -  GET: _/proxy/tenants/fs00001208/modules?limit=5000&offset=0
+2026-07-15 11:27:31.116004 America/Chicago	 Query 11 -  GET: custom-fields?limit=5000&offset=0
+2026-07-15 11:27:31.636695 America/Chicago	 Query 12 -  GET: _/proxy/tenants/fs00001208/modules?limit=5000&offset=0
+2026-07-15 11:27:31.814931 America/Chicago	 Query 13 -  GET: custom-fields?limit=5000&offset=0
+2026-07-15 11:27:32.040391 America/Chicago	 Query 14 -  PATCH: specification-storage/specifications/6eefa4c6-bbf7-4845-ad82-de7fc4abd0e3/rules/7c843a14-4c87-4c7d-9ad6-5c7654bff9b5
+2026-07-15 11:27:32.829820 America/Chicago	 Query 15 -  POST: locations?
+2026-07-15 11:27:33.139308 America/Chicago	 Query 16 -  DELETE: locations/8035f16b-95f7-4b3e-9673-9a75039fbe52?
+2026-07-15 11:27:33.407452 America/Chicago	 Query 17 -  GET: locations/094cf617-8114-457c-a4f9-7b9a546d6344?limit=5000&offset=0
+2026-07-15 11:27:33.596155 America/Chicago	 Query 18 -  PUT: locations/094cf617-8114-457c-a4f9-7b9a546d6344?
+2026-07-15 11:27:33.817541 America/Chicago	 Query 19 -  GET: locations/094cf617-8114-457c-a4f9-7b9a546d6344?limit=5000&offset=0
+2026-07-15 11:27:34.012318 America/Chicago	 Query 20 -  GET: instance-storage/instances?limit=5000&offset=0&query=statisticalCodeIds%3D%228028ab79-5a16-44eb-b48c-da94f60c8149%22+sortBy+id
+2026-07-15 11:27:34.594799 America/Chicago	 Query 21 -  GET: instance-storage/instances?limit=5000&offset=0&query=cql.allRecords%3D1+sortBy+id
+2026-07-15 11:27:42.351056 America/Chicago	 Query 22 -  GET: instance-storage/instances?limit=5000&offset=0&query=id+%3E+%2215ee7f3f-c22e-5218-902a-26d04e548644%22+and+cql.allRecords%3D1+sortBy+id
+2026-07-15 11:27:45.225225 America/Chicago	 Query 23 -  GET: instance-storage/instances?limit=5000&offset=0&query=id+%3E+%222bcbdb5b-0f77-515b-b100-4d4bb0e013ea%22+and+cql.allRecords%3D1+sortBy+id
+2026-07-15 11:27:46.794187 America/Chicago	 Query 24 -  GET: instance-storage/instances?limit=5000&offset=0&query=id+%3E+%2242541332-3817-508f-94ae-2cff821f862d%22+and+cql.allRecords%3D1+sortBy+id
+2026-07-15 11:27:47.958909 America/Chicago	 Query 25 -  GET: instance-storage/instances?limit=5000&offset=0&query=id+%3E+%22592deec8-7de2-57d9-b920-952cb88ef4b4%22+and+cql.allRecords%3D1+sortBy+id
+2026-07-15 11:27:48.922840 America/Chicago	 Query 26 -  GET: instance-storage/instances?limit=5000&offset=0&query=id+%3E+%226fb74a5a-bad9-55cd-afa9-9930137df29f%22+and+cql.allRecords%3D1+sortBy+id
+2026-07-15 11:27:49.781401 America/Chicago	 Query 27 -  GET: instance-storage/instances?limit=5000&offset=0&query=id+%3E+%2285cea873-02de-5aff-be55-c7aba7bd8065%22+and+cql.allRecords%3D1+sortBy+id
+2026-07-15 11:27:50.652925 America/Chicago	 Query 28 -  GET: instance-storage/instances?limit=5000&offset=0&query=id+%3E+%229cf088bc-4a82-5950-9fe9-896e64299ed2%22+and+cql.allRecords%3D1+sortBy+id
+2026-07-15 11:27:51.552398 America/Chicago	 Query 29 -  GET: instance-storage/instances?limit=5000&offset=0&query=id+%3E+%22b34e5bef-d596-5119-86d8-5740ce4c8311%22+and+cql.allRecords%3D1+sortBy+id
+2026-07-15 11:27:52.419717 America/Chicago	 Query 30 -  GET: instance-storage/instances?limit=5000&offset=0&query=id+%3E+%22c9e8b612-88b9-5fba-816c-d89eb2ff82f3%22+and+cql.allRecords%3D1+sortBy+id
+2026-07-15 11:27:53.249301 America/Chicago	 Query 31 -  GET: instance-storage/instances?limit=5000&offset=0&query=id+%3E+%22dfa0bce6-30fa-584b-9bfa-b9897afabadf%22+and+cql.allRecords%3D1+sortBy+id
+2026-07-15 11:27:54.142290 America/Chicago	 Query 32 -  GET: instance-storage/instances?limit=5000&offset=0&query=id+%3E+%22f649a42e-ba4e-5049-accf-7cbdd5d45384%22+and+cql.allRecords%3D1+sortBy+id
+2026-07-15 11:27:54.651026 America/Chicago	 Query 33 -  GET: instance-storage/instances?limit=5000&offset=0&query=id+%3E+%22fffffbb0-ca22-5d87-b811-fb2b801940dd%22+and+cql.allRecords%3D1+sortBy+id
+2026-07-15 11:27:54.830378 America/Chicago	 Query 34 -  GET: instance-storage/instances?limit=5000&offset=0&query=cql.allRecords%3D1+sortBy+id
+2026-07-15 11:27:55.698833 America/Chicago	 Query 35 -  GET: instance-storage/instances?limit=5000&offset=5000&query=cql.allRecords%3D1+sortBy+id
+2026-07-15 11:27:56.540412 America/Chicago	 Query 36 -  GET: instance-storage/instances?limit=5000&offset=10000&query=cql.allRecords%3D1+sortBy+id
+2026-07-15 11:27:57.383921 America/Chicago	 Query 37 -  GET: instance-storage/instances?limit=5000&offset=15000&query=cql.allRecords%3D1+sortBy+id
+2026-07-15 11:27:58.247218 America/Chicago	 Query 38 -  GET: instance-storage/instances?limit=5000&offset=20000&query=cql.allRecords%3D1+sortBy+id
+2026-07-15 11:27:59.084566 America/Chicago	 Query 39 -  GET: instance-storage/instances?limit=5000&offset=25000&query=cql.allRecords%3D1+sortBy+id
+2026-07-15 11:27:59.964329 America/Chicago	 Query 40 -  GET: instance-storage/instances?limit=5000&offset=30000&query=cql.allRecords%3D1+sortBy+id
+2026-07-15 11:28:00.983838 America/Chicago	 Query 41 -  GET: instance-storage/instances?limit=5000&offset=35000&query=cql.allRecords%3D1+sortBy+id
+2026-07-15 11:28:02.036449 America/Chicago	 Query 42 -  GET: instance-storage/instances?limit=5000&offset=40000&query=cql.allRecords%3D1+sortBy+id
+2026-07-15 11:28:03.139375 America/Chicago	 Query 43 -  GET: instance-storage/instances?limit=5000&offset=45000&query=cql.allRecords%3D1+sortBy+id
+2026-07-15 11:28:04.143214 America/Chicago	 Query 44 -  GET: instance-storage/instances?limit=5000&offset=50000&query=cql.allRecords%3D1+sortBy+id
+2026-07-15 11:28:05.499021 America/Chicago	 Query 45 -  GET: instance-storage/instances?limit=5000&offset=55000&query=cql.allRecords%3D1+sortBy+id
+2026-07-15 11:28:06.254203 America/Chicago	 Query 46 -  GET: instance-storage/instances?limit=5000&offset=0
+2026-07-15 11:28:11.308956 America/Chicago	 Query 47 -  GET: locations?limit=5&offset=0
+2026-07-15 11:28:11.492705 America/Chicago	 Query 48 -  GET: locations?limit=5000&offset=0
+2026-07-15 11:28:11.923157 America/Chicago	 Query 49 -  GET: locations?limit=5&offset=0
+2026-07-15 11:28:12.114682 America/Chicago	 Query 50 -  GET: locations/094cf617-8114-457c-a4f9-7b9a546d6344?limit=5000&offset=0
+2026-07-15 11:28:12.305893 America/Chicago	 Query 51 -  GET: locations?limit=10&offset=0
+2026-07-15 11:30:14.624289 America/Chicago	 Query 1 -  GET: locations?limit=5000&offset=0
+2026-07-15 11:30:15.676355 America/Chicago	 Query 2 -  GET: locations?limit=5000&offset=0
+2026-07-15 11:30:16.191941 America/Chicago	 Query 3 -  GET: material-types?limit=5000&offset=0
+2026-07-15 11:30:16.504040 America/Chicago	 Query 4 -  GET: loan-types?limit=5000&offset=0
+2026-07-15 11:30:16.705282 America/Chicago	 Query 5 -  GET: departments?limit=5000&offset=0
+2026-07-15 11:30:16.909116 America/Chicago	 Query 6 -  GET: addresstypes?limit=5000&offset=0
+2026-07-15 11:30:17.119531 America/Chicago	 Query 7 -  GET: groups?limit=5000&offset=0
+2026-07-15 11:30:17.329029 America/Chicago	 Query 8 -  GET: service-points?limit=5000&offset=0
+2026-07-15 11:30:17.579239 America/Chicago	 Query 9 -  GET: _/proxy/tenants/fs00001208/modules?limit=5000&offset=0
+2026-07-15 11:30:17.777368 America/Chicago	 Query 10 -  GET: _/proxy/tenants/fs00001208/modules?limit=5000&offset=0
+2026-07-15 11:30:17.960029 America/Chicago	 Query 11 -  GET: custom-fields?limit=5000&offset=0
+2026-07-15 11:30:18.185939 America/Chicago	 Query 12 -  GET: _/proxy/tenants/fs00001208/modules?limit=5000&offset=0
+2026-07-15 11:30:18.390154 America/Chicago	 Query 13 -  GET: custom-fields?limit=5000&offset=0
+2026-07-15 11:30:18.563931 America/Chicago	 Query 14 -  PATCH: specification-storage/specifications/6eefa4c6-bbf7-4845-ad82-de7fc4abd0e3/rules/7c843a14-4c87-4c7d-9ad6-5c7654bff9b5
+2026-07-15 11:30:19.127382 America/Chicago	 Query 15 -  POST: locations?
+2026-07-15 11:30:19.377993 America/Chicago	 Query 16 -  DELETE: locations/576e50fb-7bcf-4f3b-adb0-735fe8ee9290?
+2026-07-15 11:30:19.696776 America/Chicago	 Query 17 -  GET: locations/094cf617-8114-457c-a4f9-7b9a546d6344?limit=5000&offset=0
+2026-07-15 11:30:19.902795 America/Chicago	 Query 18 -  PUT: locations/094cf617-8114-457c-a4f9-7b9a546d6344?
+2026-07-15 11:30:20.113473 America/Chicago	 Query 19 -  GET: locations/094cf617-8114-457c-a4f9-7b9a546d6344?limit=5000&offset=0
+2026-07-15 11:30:20.286345 America/Chicago	 Query 20 -  GET: instance-storage/instances?limit=5000&offset=0&query=statisticalCodeIds%3D%228028ab79-5a16-44eb-b48c-da94f60c8149%22+sortBy+id
+2026-07-15 11:30:20.733408 America/Chicago	 Query 21 -  GET: instance-storage/instances?limit=5000&offset=0&query=cql.allRecords%3D1+sortBy+id
+2026-07-15 11:30:24.452613 America/Chicago	 Query 22 -  GET: instance-storage/instances?limit=5000&offset=0&query=id+%3E+%2215ee7f3f-c22e-5218-902a-26d04e548644%22+and+cql.allRecords%3D1+sortBy+id
+2026-07-15 11:30:26.537517 America/Chicago	 Query 23 -  GET: instance-storage/instances?limit=5000&offset=0&query=id+%3E+%222bcbdb5b-0f77-515b-b100-4d4bb0e013ea%22+and+cql.allRecords%3D1+sortBy+id
+2026-07-15 11:30:28.203402 America/Chicago	 Query 24 -  GET: instance-storage/instances?limit=5000&offset=0&query=id+%3E+%2242541332-3817-508f-94ae-2cff821f862d%22+and+cql.allRecords%3D1+sortBy+id
+2026-07-15 11:30:29.561028 America/Chicago	 Query 25 -  GET: instance-storage/instances?limit=5000&offset=0&query=id+%3E+%22592deec8-7de2-57d9-b920-952cb88ef4b4%22+and+cql.allRecords%3D1+sortBy+id
+2026-07-15 11:30:30.593231 America/Chicago	 Query 26 -  GET: instance-storage/instances?limit=5000&offset=0&query=id+%3E+%226fb74a5a-bad9-55cd-afa9-9930137df29f%22+and+cql.allRecords%3D1+sortBy+id
+2026-07-15 11:30:31.526416 America/Chicago	 Query 27 -  GET: instance-storage/instances?limit=5000&offset=0&query=id+%3E+%2285cea873-02de-5aff-be55-c7aba7bd8065%22+and+cql.allRecords%3D1+sortBy+id
+2026-07-15 11:30:32.327042 America/Chicago	 Query 28 -  GET: instance-storage/instances?limit=5000&offset=0&query=id+%3E+%229cf088bc-4a82-5950-9fe9-896e64299ed2%22+and+cql.allRecords%3D1+sortBy+id
+2026-07-15 11:30:33.198579 America/Chicago	 Query 29 -  GET: instance-storage/instances?limit=5000&offset=0&query=id+%3E+%22b34e5bef-d596-5119-86d8-5740ce4c8311%22+and+cql.allRecords%3D1+sortBy+id
+2026-07-15 11:30:34.093996 America/Chicago	 Query 30 -  GET: instance-storage/instances?limit=5000&offset=0&query=id+%3E+%22c9e8b612-88b9-5fba-816c-d89eb2ff82f3%22+and+cql.allRecords%3D1+sortBy+id
+2026-07-15 11:30:34.943642 America/Chicago	 Query 31 -  GET: instance-storage/instances?limit=5000&offset=0&query=id+%3E+%22dfa0bce6-30fa-584b-9bfa-b9897afabadf%22+and+cql.allRecords%3D1+sortBy+id
+2026-07-15 11:30:36.399313 America/Chicago	 Query 32 -  GET: instance-storage/instances?limit=5000&offset=0&query=id+%3E+%22f649a42e-ba4e-5049-accf-7cbdd5d45384%22+and+cql.allRecords%3D1+sortBy+id
+2026-07-15 11:30:36.953493 America/Chicago	 Query 33 -  GET: instance-storage/instances?limit=5000&offset=0&query=id+%3E+%22fffffbb0-ca22-5d87-b811-fb2b801940dd%22+and+cql.allRecords%3D1+sortBy+id
+2026-07-15 11:30:37.163122 America/Chicago	 Query 34 -  GET: instance-storage/instances?limit=5000&offset=0&query=cql.allRecords%3D1+sortBy+id
+2026-07-15 11:30:38.128328 America/Chicago	 Query 35 -  GET: instance-storage/instances?limit=5000&offset=5000&query=cql.allRecords%3D1+sortBy+id
+2026-07-15 11:30:39.084579 America/Chicago	 Query 36 -  GET: instance-storage/instances?limit=5000&offset=10000&query=cql.allRecords%3D1+sortBy+id
+2026-07-15 11:30:39.986917 America/Chicago	 Query 37 -  GET: instance-storage/instances?limit=5000&offset=15000&query=cql.allRecords%3D1+sortBy+id
+2026-07-15 11:30:40.862501 America/Chicago	 Query 38 -  GET: instance-storage/instances?limit=5000&offset=20000&query=cql.allRecords%3D1+sortBy+id
+2026-07-15 11:30:41.813299 America/Chicago	 Query 39 -  GET: instance-storage/instances?limit=5000&offset=25000&query=cql.allRecords%3D1+sortBy+id
+2026-07-15 11:30:42.802780 America/Chicago	 Query 40 -  GET: instance-storage/instances?limit=5000&offset=30000&query=cql.allRecords%3D1+sortBy+id
+2026-07-15 11:30:43.925991 America/Chicago	 Query 41 -  GET: instance-storage/instances?limit=5000&offset=35000&query=cql.allRecords%3D1+sortBy+id
+2026-07-15 11:30:45.143089 America/Chicago	 Query 42 -  GET: instance-storage/instances?limit=5000&offset=40000&query=cql.allRecords%3D1+sortBy+id
+2026-07-15 11:30:46.351005 America/Chicago	 Query 43 -  GET: instance-storage/instances?limit=5000&offset=45000&query=cql.allRecords%3D1+sortBy+id
+2026-07-15 11:30:47.644017 America/Chicago	 Query 44 -  GET: instance-storage/instances?limit=5000&offset=50000&query=cql.allRecords%3D1+sortBy+id
+2026-07-15 11:30:48.830502 America/Chicago	 Query 45 -  GET: instance-storage/instances?limit=5000&offset=55000&query=cql.allRecords%3D1+sortBy+id
+2026-07-15 11:30:49.537716 America/Chicago	 Query 46 -  GET: instance-storage/instances?limit=5000&offset=0
+2026-07-15 11:30:50.780584 America/Chicago	 Query 47 -  GET: locations?limit=5&offset=0
+2026-07-15 11:30:50.989347 America/Chicago	 Query 48 -  GET: locations?limit=5000&offset=0
+2026-07-15 11:30:51.222878 America/Chicago	 Query 49 -  GET: locations?limit=5&offset=0
+2026-07-15 11:30:51.418448 America/Chicago	 Query 50 -  GET: locations/094cf617-8114-457c-a4f9-7b9a546d6344?limit=5000&offset=0
+2026-07-15 11:30:51.611612 America/Chicago	 Query 51 -  GET: locations?limit=10&offset=0
+2026-07-15 12:42:52.933321 America/Chicago	 Query 1 -  GET: locations?limit=5000&offset=0
+2026-07-15 12:42:53.805164 America/Chicago	 Query 2 -  Status code: 200
+2026-07-15 12:42:53.807291 America/Chicago	 Query 3 -  GET: locations?limit=5000&offset=0
+2026-07-15 12:42:54.263954 America/Chicago	 Query 4 -  Status code: 200
+2026-07-15 12:47:35.447112 America/Chicago	 Query 1 -  GET: locations?limit=5000&offset=0
+2026-07-15 12:47:36.294496 America/Chicago	 Query 1 -  Status code: 200
+2026-07-15 12:47:36.297066 America/Chicago	 Query 2 -  GET: locations?limit=5000&offset=0
+2026-07-15 12:47:36.730414 America/Chicago	 Query 2 -  Status code: 200

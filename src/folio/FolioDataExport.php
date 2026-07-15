@@ -17,8 +17,8 @@ class FolioDataExport {
     function dataExport(string $filename = 'test.csv',string $exportProfileName = 'Default instances export job profile',string $out_Path = '',string|null $tenant_id = null): array|object|null {
         // https://folio-org.atlassian.net/browse/UXPROD-2330
         $tenant_id ??= $this->config->central_tenant_id ?? $this->config->tenant_id;       
-
-        // try{
+$this->verbose = true;
+        try{
             // step 1 - get export profile id
             $profile=$this->client->get('/data-export/job-profiles','name=="' . $exportProfileName . '"',[],FolioClient::RETURN_FULL_OBJECT,tenant_id: $tenant_id);
             $jobProfileId=$profile->jobProfiles[0]->id;
@@ -28,11 +28,22 @@ class FolioDataExport {
             // step 2 - get file id
             $fileInfo = new \stdClass();
             $fileInfo->fileName = realpath($filename);
-            // readfile(realpath($filename));
+            $fileInfo->uploadFormat = 'csv';
+            print_r($fileInfo);
             
             $options = [
                 'headers' => ['Accept' => 'application/json']
             ];
+            // $options = [
+            //     [
+            //         'name' => 'file',
+            //         'contents' => fopen($filename,'r'),
+            //         'filename' => $filename
+            //     ]
+            // ];
+
+            print_r($options);
+
             $fileDef=$this->client->post('/data-export/file-definitions',$fileInfo,null,$options);
 
             $fileId=$fileDef->id;
@@ -62,7 +73,6 @@ class FolioDataExport {
             $time = time();
             do{
                 $jobExecInfo=$this->client->get('/data-export/job-executions','id=="' . $jobExecId . '"',[],FolioClient::RETURN_FULL_OBJECT,tenant_id: $tenant_id);
-
                 $status = $jobExecInfo->jobExecutions[0]->status;
                 
                 if(in_array($status, ['SUCCESS', 'COMPLETED', 'COMPLETED_WITH_ERRORS', 'FAIL'])){
@@ -97,9 +107,9 @@ class FolioDataExport {
             ($this->verbose) ? print "step 7 - get file\n" : '';
 
             return $jobExecInfo;
-        // }catch (\Exception $e){
-        //     throw new \Exception("Data Export Error: " . $e->getMessage());
-        // }
+        }catch (\Exception $e){
+            throw new \Exception("Data Export Error: " . $e->getMessage());
+        }
     }
 
     public function dataExportAll(string $exportProfileName = 'Default instances export job profile',string $out_Path = '',bool $includeDeleted = false,bool $includeSuppressed = false,string|null $tenant_id = null): array|object|null {

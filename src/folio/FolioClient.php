@@ -30,10 +30,11 @@ class FolioClient {
     private FolioUtils $folioUtils;
     private FolioInformation $information;
 
-    private int $queryNum = 0;
     private int $lastStatusCode;
     private string $lastQuery = '';
     private ?string $central_tenant_id = null;
+
+    private int $queryNum = 1;
 
     private int $getAllDefaultLimit = 5000;
 
@@ -212,26 +213,42 @@ class FolioClient {
         $uri = trim($endpoint, "/ \t\r\n\0");
         
         // Build query string (skip for PATCH requests)
-        $queryString = $method !== 'PATCH' 
+        // $queryString = $method !== 'PATCH' 
+        //     ? '?' . http_build_query($this->_handleParameters($method, $params, $query))
+        //     : '';
+
+        $queryString = !empty($this->_handleParameters($method, $params, $query))
             ? '?' . http_build_query($this->_handleParameters($method, $params, $query))
             : '';
         
         // Merge headers with defaults
         $finalOptions = $this->_buildRequestOptions($options);
         
+        $this->logger->log("$method: $uri$queryString",$this->queryNum);
         $this->lastQuery = "{$method}: {$uri}";
         try {
             $response = $this->httpClient->request($method, $uri . $queryString, $finalOptions);
             $this->lastStatusCode = $response->getStatusCode();
-            $this->queryNum++;
+
+            if ($response->hasHeader('Content-Length')) {
+                // getHeader() returns an array; access index 0 for the value
+                $len = (int) $response->getHeader('Content-Length')[0];
+                $contentLength = "Content Length: " . $len;
+            } else {
+                $contentLength =  "";
+            }
+
+            $this->logger->log("Status code: " . $this->lastStatusCode,$this->queryNum,$contentLength);
 
             return json_decode((string)$response->getBody()->getContents(), false);
         } catch (ClientException|ServerException $e) {
-            $this->logger->log("HTTP error on {$this->lastQuery}: " . $e->getMessage());
+            $this->logger->log("HTTP error on {$this->lastQuery}: " . $e->getMessage(),$this->queryNum);
             throw $e;
         } catch (ConnectException $e) {
-            $this->logger->log("Connection error on {$this->lastQuery}: " . $e->getMessage());
+            $this->logger->log("Connection error on {$this->lastQuery}: " . $e->getMessage(),$this->queryNum);
             throw $e;
+        }finally{
+            $this->queryNum++;
         }
     }
 

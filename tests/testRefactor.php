@@ -10,7 +10,6 @@ use phpFolioClient\FolioFileHandler;
 use phpFolioClient\FolioUtils;
 use phpFolioClient\FolioInformation;
 use phpFolioClient\FolioReferenceDataManager;
-use phpFolioClient\phpFolioClient;
 
 $hostname = 'lsedemo';
 
@@ -34,8 +33,11 @@ try{
 }
 
 
-$exportHandler->dataExport('test.csv');
-exit;
+// $exportHandler->dataExport("/home/marnold/phpFolioClient2/testExport.csv");
+// exit;
+
+// $exportHandler->dataExportAll();
+// print "Export all data\n";
 
 $locNames = $refData->getLocations();
 print "Location names count: " . sizeof($locNames) . PHP_EOL;
