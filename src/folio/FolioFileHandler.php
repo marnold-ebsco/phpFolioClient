@@ -17,8 +17,45 @@ class FolioFileHandler {
     }
     
     
-    #file functions
     public function putFile(string $endpoint,string $filename,string|null $tenant_id = null): array|object|null{
+        $tenant_id ??= $this->config->central_tenant_id ?? $this->config->tenant_id;
+
+
+        try{
+            $endpoint = trim($endpoint,"/ \t\r\n\0");
+            $tenant_id ??= $tenant_id;
+            if(file_exists($filename)){
+                $fileStream = fopen($filename, 'rb');
+                $options = [
+                    'headers' => [
+                        'Accept' => 'application/json',
+                        'x-okapi-tenant' => $tenant_id,
+                        'Content-Type' => 'application/octet-stream',
+                        'Content-Length' => filesize($filename),
+                        'x-okapi-token' => $this->auth->getAccessToken()
+                    ],
+					'body' => $fileStream,
+					'curl' => [
+						CURLOPT_RETURNTRANSFER => true,
+						CURLOPT_FOLLOWLOCATION => true
+					]
+                ];
+               
+                // $response = $this->_request('POST',$endpoint,null,$options);
+                $response = $this->client->_request('POST',$endpoint,null,[],$tenant_id,$options);
+                print_r($response);
+                return $response;
+                
+            }else{
+                throw new \Exception("Could not open filename: $filename");
+            }
+        }catch(\Exception $e){
+            throw new \Exception("PutFile Error: " . $e->getMessage());
+        }
+    }
+
+    #file functions
+    public function putFileX(string $endpoint,string $filename,string|null $tenant_id = null): array|object|null{
         $tenant_id ??= $this->config->central_tenant_id ?? $this->config->tenant_id;
 
         try{

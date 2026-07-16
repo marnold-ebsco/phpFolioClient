@@ -34,8 +34,8 @@ try{
 }
 
 
-// $exportHandler->dataExport("/home/marnold/phpFolioClient2/testExport.csv");
-// exit;
+$exportHandler->dataExport("/home/marnold/phpFolioClient2/testExport.csv");
+exit;
 
 // $exportHandler->dataExportAll();
 // print "Export all data\n";
