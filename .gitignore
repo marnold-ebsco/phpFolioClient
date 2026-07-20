@@ -6,8 +6,6 @@ folioLog.txt
 fileExportTest.csv
 lsedemo.ini
 .phpunit.result.cache
-<<<<<<< HEAD
-=======
 test*.mrc
 test*.csv
->>>>>>> refactorIntoSmallerClasses
+
