@@ -1,5 +1,7 @@
 <phpunit colors="true" bootstrap="vendor/autoload.php" displayDetailsOnTestsThatTriggerWarnings="true"
-        displayDetailsOnTestsThatTriggerDeprecations="true" displayDetailsOnPhpunitDeprecations="true" >
+        displayDetailsOnTestsThatTriggerDeprecations="true" displayDetailsOnPhpunitDeprecations="true" 
+        displayDetailsOnTestsThatTriggerNotices="true" failOnNotice="true"
+        displayDetailsOnSkippedTests="true" >
     <source>
         <include>
             <directory>tests</directory>

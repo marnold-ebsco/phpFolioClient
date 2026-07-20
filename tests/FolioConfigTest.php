@@ -8,7 +8,10 @@ use phpFolioClient\FolioConfig;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+
+#[AllowMockObjectsWithoutExpectations]
 class FolioConfigTest extends TestCase {
     private array $validConfig;
 
@@ -102,10 +105,8 @@ class FolioConfigTest extends TestCase {
         new FolioConfig($config);
     }
 
-    public static function provideInvalidConfigInputs(): array {
-        return [
-            'non-existent ini file' => ['/path/to/nonexistent/file.ini', InvalidArgumentException::class],
-        ];
+    public static function provideInvalidConfigInputs(): iterable {
+        yield 'non-existent ini file' => ['/path/to/nonexistent/file.ini', InvalidArgumentException::class];
     }
 
     #[Test]

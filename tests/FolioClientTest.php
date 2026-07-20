@@ -14,7 +14,10 @@ use phpFolioClient\FolioInformation;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
 use stdClass;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+
+#[AllowMockObjectsWithoutExpectations]
 class FolioClientTest extends TestCase
 {
     private FolioClient $folioClient;

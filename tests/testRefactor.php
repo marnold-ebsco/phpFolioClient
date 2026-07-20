@@ -13,12 +13,24 @@ use phpFolioClient\FolioReferenceDataManager;
 
 $hostname = 'lsedemo';
 
+// clean up old files
+$directory = '/home/marnold/phpFolioClient2';
+$today = strtotime('today');
 
+// Find all .mrc files matching the pattern
+foreach (glob($directory . "/*.mrc") as $file) {
+    // Validate that it is a file and was not created today
+    if (is_file($file) && filemtime($file) < $today) {
+        unlink($file); // Delete the file
+    }
+}
+
+
+// tests
 try{
     $config = new FolioConfig($hostname . ".ini");
     $utils = new FolioUtils();
     $auth = new FolioAuth($config);
-    // $auth->getAccessToken();
     $logger = new FolioLogger('folioClientLog.txt');
     $information = new FolioInformation($config,$auth);
 
@@ -36,9 +48,9 @@ try{
 
 // $exportHandler->dataExport("/home/marnold/phpFolioClient2/testExport.csv");
 // exit;
+print "Export all marc data\n";
+$exportHandler->dataExportAll();
 
-// $exportHandler->dataExportAll();
-// print "Export all data\n";
 
 $locNames = $refData->getLocations();
 print "Location names count: " . sizeof($locNames) . PHP_EOL;

@@ -9,7 +9,10 @@ use phpFolioClient\FolioFileHandler;
 use phpFolioClient\FolioClient;
 use phpFolioClient\FolioConfig;
 use phpFolioClient\FolioAuth;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+
+#[AllowMockObjectsWithoutExpectations]
 class FolioFileHandlerTest extends TestCase
 {
     private FolioFileHandler $handler;

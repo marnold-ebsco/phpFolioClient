@@ -8,7 +8,11 @@ use phpFolioClient\FolioConfig;
 use phpFolioClient\FolioAuth;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Before;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+
+#[AllowMockObjectsWithoutExpectations]
 class FolioInformationTest extends TestCase {
     private FolioInformation $folioInformation;
     private FolioConfig $mockConfig;

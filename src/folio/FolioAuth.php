@@ -10,11 +10,12 @@ class FolioAuth {
     private string $token = '';
     private string $authFlavor = 'RTR';
     public int $ATExpires = 0;
-    public \dateTime $ATExpiresObj;
+    public \DateTime $ATExpiresObj;
     public int $needsRefreshBeforeExpires = 60;
 
     public function __construct(FolioConfig $config) {
         $this->config = $config;
+        $this->ATExpiresObj = new \DateTime();
     }
 
     public function getAccessToken(): string {

@@ -3,6 +3,7 @@
 namespace phpFolioClient\Tests;
 
 use phpFolioClient\FolioLogger;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 class FolioLoggerTest extends TestCase {
