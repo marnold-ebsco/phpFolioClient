@@ -34,11 +34,13 @@ class phpFolioClientTestSettingsTest extends TestCase {
 		$this->assertEquals(60, $newTimeout);
 	}
 
-	public function testSetVerbose(){
+	public function testSetVerboseTrue(){
 		self::$folio->setVerbose(true);
 		self::$folio->connect(true);
 		$this->expectOutputRegex("/authentication/");
+	}
 
+	public function testSetVerboseFalse(){
 		self::$folio->setVerbose(false);
 		self::$folio->connect(true);
 		$this->expectOutputString('');
