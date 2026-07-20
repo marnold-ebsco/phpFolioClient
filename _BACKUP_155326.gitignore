@@ -1,0 +1,13 @@
+vendor/
+folioClientLog.txt
+testClient.txt
+composer.lock
+folioLog.txt
+fileExportTest.csv
+lsedemo.ini
+.phpunit.result.cache
+<<<<<<< HEAD
+=======
+test*.mrc
+test*.csv
+>>>>>>> refactorIntoSmallerClasses
