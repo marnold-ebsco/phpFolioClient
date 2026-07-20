@@ -149,10 +149,7 @@ class phpFolioClient {
         $this->verbose = $verbose;
     }
 
-<<<<<<<< HEAD:v1/src/folio/phpFolioClient.php
-========
     // get information
->>>>>>>> refactorIntoSmallerClasses:v2/src/folio/phpFolioClient.php
     public function getFlavor(){
         return $this->authFlavor;
     }
@@ -889,12 +886,9 @@ class phpFolioClient {
                 $this->lastStatusCode = $response->getStatusCode();
                 
                 return json_decode($contents, false);
-<<<<<<<< HEAD:v1/src/folio/phpFolioClient.php
-                
-========
+
             }catch (RequestException $e){
                 $this->_handleClientException($e);
->>>>>>>> refactorIntoSmallerClasses:v2/src/folio/phpFolioClient.php
             }catch (ClientException $e){
                 $this->_handleClientException($e);
                 $try = $this->maxRetries;
@@ -1015,11 +1009,7 @@ class phpFolioClient {
                 'Accept' => 'application/json',
                 'Content-Type' => 'application/json',
             ]
-<<<<<<<< HEAD:v1/src/folio/phpFolioClient.php
-            ];
-========
         ];
->>>>>>>> refactorIntoSmallerClasses:v2/src/folio/phpFolioClient.php
     }
 
     private function _legacyConnect(): int {

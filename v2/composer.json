@@ -20,9 +20,6 @@
             "FolioReferenceDataManager\\": "src/folio/",
             "FolioFileHandler\\": "src/folio/",
             "FolioDataExport\\": "src/folio/"
-        },
-        "classmap": [
-            "src/"
-        ]
+        }
     }
 }
