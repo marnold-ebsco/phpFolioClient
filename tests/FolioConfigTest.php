@@ -1,98 +1,166 @@
-<?php
+<?php declare(strict_types=1);
 
-namespace Tests;
+namespace phpFolioClient\Tests;
 
-use PHPUnit\Framework\TestCase;
+use InvalidArgumentException;
+use Exception;
 use phpFolioClient\FolioConfig;
+use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\DataProvider;
 
-require_once 'src/bootstrap.php';
+class FolioConfigTest extends TestCase {
+    private array $validConfig;
 
-// class FolioConfigTest extends TestCase
-// {
-//     private FolioConfig $config;
+    protected function setUp(): void {
+        $this->validConfig = [
+            'okapiUrl' => 'https://folio.example.com',
+            'tenant_id' => 'tenant1',
+            'username' => 'user@example.com',
+            'password' => 'secret123',
+        ];
+    }
 
-//     protected function setUp(): void
-//     {
-//         $hostname = 'lsedemo';
-//         $this->config = new FolioConfig($hostname . ".ini");
-//     }
+    #[Test]
+    public function testConstructorWithValidArrayConfig(): void {
+        $config = new FolioConfig($this->validConfig);
+        
+        $this->assertEquals('https://folio.example.com', $config->okapiUrl);
+        $this->assertEquals('tenant1', $config->tenant_id);
+        $this->assertEquals('user@example.com', $config->username);
+        $this->assertEquals('secret123', $config->password);
+    }
 
-//     public function testConfigInitialization(): void
-//     {
-//         $this->assertInstanceOf(FolioConfig::class, $this->config);
-//     }
+    #[Test]
+    public function testConstructorWithValidObjectConfig(): void {
+        $configObj = (object) $this->validConfig;
+        $config = new FolioConfig($configObj);
+        
+        $this->assertEquals('https://folio.example.com', $config->okapiUrl);
+        $this->assertEquals('tenant1', $config->tenant_id);
+    }
 
-//     public function testSetAndGetHost(): void
-//     {
-//         // $this->config->setHost('localhost');
-//         $this->assertEquals('localhost', $this->config->getHost());
-//     }
+    #[Test]
+    public function testConstructorWithOptionalProperties(): void {
+        $config_data = array_merge($this->validConfig, [
+            'central_tenant_id' => 'central_tenant',
+            'sslVerify' => false,
+            'debug' => true,
+        ]);
+        
+        $config = new FolioConfig($config_data);
+        
+        $this->assertEquals('central_tenant', $config->central_tenant_id);
+        $this->assertFalse($config->sslVerify);
+        $this->assertTrue($config->debug);
+    }
 
-//     public function testSetAndGetPort(): void
-//     {
-//         $this->config->setPort(8080);
-//         $this->assertEquals(8080, $this->config->getPort());
-//     }
+    #[Test]
+    public function testConstructorThrowsExceptionOnMissingOkapiUrl(): void {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Missing required config key: okapiUrl');
+        
+        $config_data = $this->validConfig;
+        unset($config_data['okapiUrl']);
+        new FolioConfig($config_data);
+    }
 
-//     public function testSetAndGetOkapiUrl(): void
-//     {
-//         $url = 'http://localhost:9130';
-//         $this->config->setOkapiUrl($url);
-//         $this->assertEquals($url, $this->config->getOkapiUrl());
-//     }
+    #[Test]
+    public function testConstructorThrowsExceptionOnMissingTenantId(): void {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Missing required config key: tenant_id');
+        
+        $config_data = $this->validConfig;
+        unset($config_data['tenant_id']);
+        new FolioConfig($config_data);
+    }
 
-//     public function testSetAndGetTenant(): void
-//     {
-//         $this->config->setTenant('diku');
-//         $this->assertEquals('diku', $this->config->getTenant());
-//     }
+    #[Test]
+    public function testConstructorThrowsExceptionOnMissingUsername(): void {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Missing required config key: username');
+        
+        $config_data = $this->validConfig;
+        unset($config_data['username']);
+        new FolioConfig($config_data);
+    }
 
-//     public function testSetAndGetUsername(): void
-//     {
-//         $this->config->setUsername('admin');
-//         $this->assertEquals('admin', $this->config->getUsername());
-//     }
+    #[Test]
+    public function testConstructorThrowsExceptionOnMissingPassword(): void {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Missing required config key: password');
+        
+        $config_data = $this->validConfig;
+        unset($config_data['password']);
+        new FolioConfig($config_data);
+    }
 
-//     public function testSetAndGetPassword(): void
-//     {
-//         $this->config->setPassword('password123');
-//         $this->assertEquals('password123', $this->config->getPassword());
-//     }
+    #[Test]
+    #[DataProvider('provideInvalidConfigInputs')]
+    public function testConstructorWithInvalidInputs(mixed $config, string $expectedException): void {
+        $this->expectException($expectedException);
+        new FolioConfig($config);
+    }
 
-//     public function testConfigFromArray(): void
-//     {
-//         $configArray = [
-//             'host' => 'example.com',
-//             'port' => 9130,
-//             'okapi_url' => 'http://example.com:9130',
-//             'tenant' => 'supertenant',
-//             'username' => 'user',
-//             'password' => 'pass'
-//         ];
+    public static function provideInvalidConfigInputs(): array {
+        return [
+            'non-existent ini file' => ['/path/to/nonexistent/file.ini', InvalidArgumentException::class],
+        ];
+    }
 
-//         $this->config->loadFromArray($configArray);
+    #[Test]
+    public function testGetApiUrl(): void {
+        $config = new FolioConfig($this->validConfig);
+        $this->assertEquals('https://folio.example.com', $config->getApiUrl());
+    }
 
-//         $this->assertEquals('example.com', $this->config->getHost());
-//         $this->assertEquals(9130, $this->config->getPort());
-//         $this->assertEquals('supertenant', $this->config->getTenant());
-//     }
+    #[Test]
+    public function testGetTenantId(): void {
+        $config = new FolioConfig($this->validConfig);
+        $this->assertEquals('tenant1', $config->getTenantId());
+    }
 
-//     public function testIsValidConfiguration(): void
-//     {
-//         $this->config->setHost('localhost');
-//         $this->config->setPort(9130);
-//         $this->config->setTenant('diku');
-//         $this->config->setUsername('admin');
-//         $this->config->setPassword('password');
+    #[Test]
+    public function testGetCentralTenantId(): void {
+        $config_data = array_merge($this->validConfig, ['central_tenant_id' => 'central1']);
+        $config = new FolioConfig($config_data);
+        $this->assertEquals('central1', $config->getCentralTenantId());
+    }
 
-//         $this->assertTrue($this->config->isValid());
-//     }
+    #[Test]
+    public function testGetUsername(): void {
+        $config = new FolioConfig($this->validConfig);
+        $this->assertEquals('user@example.com', $config->getUsername());
+    }
 
-//     public function testInvalidConfigurationMissingRequiredField(): void
-//     {
-//         $this->config->setHost('localhost');
-//         $this->config->setTenant('diku');
+    #[Test]
+    public function testDefaultTimeoutValue(): void {
+        $config = new FolioConfig($this->validConfig);
+        $this->assertEquals(30, $config->timeout);
+    }
 
-//         $this->assertFalse($this->config->isValid());
-//     }
-// }
+    #[Test]
+    public function testDefaultSslVerifyValue(): void {
+        $config = new FolioConfig($this->validConfig);
+        $this->assertTrue($config->sslVerify);
+    }
+
+    #[Test]
+    public function testDefaultDebugValue(): void {
+        $config = new FolioConfig($this->validConfig);
+        $this->assertFalse($config->debug);
+    }
+
+    #[Test]
+    public function testDefaultLocalTimeZone(): void {
+        $config = new FolioConfig($this->validConfig);
+        $this->assertEquals('America/Chicago', $config->localTimeZone);
+    }
+
+    #[Test]
+    public function testEmptyStringValuesInRequiredFields(): void {
+        $config_data = array_merge($this->validConfig, ['okapiUrl' => '']);
+        $config = new FolioConfig($config_data);
+        $this->assertEquals('', $config->okapiUrl);
+    }
+}

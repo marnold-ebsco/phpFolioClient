@@ -7,7 +7,7 @@ use InvalidArgumentException;
 class FolioConfig {
     public string $okapiUrl;
     public string $tenant_id;
-    public string $central_tenant_id;
+    public ?string $central_tenant_id;
     public string $username;
     public string $password;
     public string|bool $sslVerify = true;
@@ -32,7 +32,7 @@ class FolioConfig {
         }
 
         // Assign optional properties
-        $optional = ['central_tenant_id', 'sslVerify', 'name'];
+        $optional = ['central_tenant_id', 'sslVerify', 'debug', 'timeout', 'localTimeZone', 'name'];
         foreach ($optional as $opt) {
             if (isset($config[$opt])) {
                 $this->$opt = $config[$opt];

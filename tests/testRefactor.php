@@ -34,8 +34,8 @@ try{
 }
 
 
-$exportHandler->dataExport("/home/marnold/phpFolioClient2/testExport.csv");
-exit;
+// $exportHandler->dataExport("/home/marnold/phpFolioClient2/testExport.csv");
+// exit;
 
 // $exportHandler->dataExportAll();
 // print "Export all data\n";
@@ -45,7 +45,6 @@ print "Location names count: " . sizeof($locNames) . PHP_EOL;
 
 $locCodes = $refData->getLocationCodes();
 print "Location codes count: " . sizeof($locCodes) . PHP_EOL;
-exit;
 
 $mattypes = $refData->getMaterialTypes();
 print "Mattype count: " . sizeof($mattypes) . PHP_EOL;

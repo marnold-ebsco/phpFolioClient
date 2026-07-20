@@ -43,7 +43,6 @@ class FolioFileHandler {
                
                 // $response = $this->_request('POST',$endpoint,null,$options);
                 $response = $this->client->_request('POST',$endpoint,null,[],$tenant_id,$options);
-                print_r($response);
                 return $response;
                 
             }else{
@@ -81,12 +80,10 @@ class FolioFileHandler {
 					],
                     'debug' => true
                 ];
-                print "!!!!!!!\n";
-                print_r($options);
+
                 
                 // $client = new Client(['base_uri' => $this->config->okapiUrl,'verify'=>$this->config->sslVerify]);
                 $response = $this->client->post($endpoint,null,$tenant_id,$options);
-                print_r($response);
                 // exit;
                 return $response;
 
@@ -158,12 +155,20 @@ class FolioFileHandler {
         }
     }
 
+
     public function getFile(string $filename,string $url,string|null $tenant_id=null): void {
         try{
+            $dir = dirname($filename);
+            if(!is_dir($dir) || !is_writable($dir)){
+                throw new \Exception("Could not write to filename: $filename");
+            }
             $fh = fopen($filename,'w');
             if($fh){
                 $client = new Client(['base_uri' => $this->config->okapiUrl,'verify'=>$this->config->sslVerify]);
-                $client->get($url, ['sink' => $fh]);
+                $response = $client->get($url, ['sink' => $fh]);
+                if(!$response || $response->getStatusCode() < 200 || $response->getStatusCode() >= 300){
+                    throw new \Exception("Failed to download file: Invalid response from server");
+                }
 
                 // if($this->logPath){
 

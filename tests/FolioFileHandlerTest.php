@@ -1,168 +1,246 @@
-<?php
+<?php declare(strict_types=1);
 
-namespace Tests;
+namespace phpFolioClient\Tests;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\DataProvider;
 use phpFolioClient\FolioFileHandler;
-use Exception;
+use phpFolioClient\FolioClient;
+use phpFolioClient\FolioConfig;
+use phpFolioClient\FolioAuth;
 
-require_once 'src/bootstrap.php';
+class FolioFileHandlerTest extends TestCase
+{
+    private FolioFileHandler $handler;
+    private FolioClient $mockClient;
+    private FolioConfig $mockConfig;
+    private FolioAuth $mockAuth;
 
-// class FolioFileHandlerTest extends TestCase
-// {
-//     private FolioFileHandler $handler;
-//     private string $testDir;
-//     private string $testFile;
+    protected function setUp(): void
+    {
+        $this->mockAuth = $this->createMock(FolioAuth::class);
+        $this->mockAuth->method('getAccessToken')->willReturn('test-token-123');
 
-//     protected function setUp(): void
-//     {
-//         $this->handler = new FolioFileHandler();
-//         $this->testDir = sys_get_temp_dir() . '/folio_test_' . uniqid();
-//         $this->testFile = $this->testDir . '/test_file.txt';
-        
-//         if (!is_dir($this->testDir)) {
-//             mkdir($this->testDir, 0755, true);
-//         }
-//     }
+        $this->mockConfig = $this->createMock(FolioConfig::class);
+        $this->mockConfig->central_tenant_id = null;
+        $this->mockConfig->tenant_id = 'test-tenant';
+        $this->mockConfig->okapiUrl = 'https://example.com';
+        $this->mockConfig->sslVerify = true;
 
-//     protected function tearDown(): void
-//     {
-//         if (is_dir($this->testDir)) {
-//             $this->removeDirectory($this->testDir);
-//         }
-//     }
+        $this->mockClient = $this->createMock(FolioClient::class);
+        $this->mockClient->method('getConfig')->willReturn($this->mockConfig);
+        $this->mockClient->method('getAuth')->willReturn($this->mockAuth);
 
-//     private function removeDirectory(string $dir): void
-//     {
-//         if (is_dir($dir)) {
-//             $files = scandir($dir);
-//             foreach ($files as $file) {
-//                 if ($file !== '.' && $file !== '..') {
-//                     $path = $dir . '/' . $file;
-//                     if (is_dir($path)) {
-//                         $this->removeDirectory($path);
-//                     } else {
-//                         unlink($path);
-//                     }
-//                 }
-//             }
-//             rmdir($dir);
-//         }
-//     }
+        $this->handler = new FolioFileHandler($this->mockClient);
+    }
 
-//     public function testWriteFile(): void
-//     {
-//         $content = 'Test content for the file';
-//         $this->handler->writeFile($this->testFile, $content);
-        
-//         $this->assertFileExists($this->testFile);
-//         $this->assertEquals($content, file_get_contents($this->testFile));
-//     }
+    #[Test]
+    public function testPutFileWithValidFile(): void
+    {
+        $tempFile = tempnam(sys_get_temp_dir(), 'test_');
+        file_put_contents($tempFile, 'test file content');
 
-//     public function testReadFile(): void
-//     {
-//         $content = 'Content to read from file';
-//         file_put_contents($this->testFile, $content);
-        
-//         $result = $this->handler->readFile($this->testFile);
-        
-//         $this->assertEquals($content, $result);
-//     }
+        $this->mockClient
+            ->expects($this->once())
+            ->method('_request')
+            ->with(
+                'POST',
+                'endpoint',
+                null,
+                [],
+                'test-tenant',
+                $this->anything()
+            )
+            ->willReturn(['success' => true]);
 
-//     public function testReadFileNotFound(): void
-//     {
-//         $this->expectException(Exception::class);
-//         $this->handler->readFile('/nonexistent/file.txt');
-//     }
+        $result = $this->handler->putFile('endpoint', $tempFile);
 
-//     public function testFileExists(): void
-//     {
-//         file_put_contents($this->testFile, 'test');
-        
-//         $this->assertTrue($this->handler->fileExists($this->testFile));
-//         $this->assertFalse($this->handler->fileExists($this->testDir . '/nonexistent.txt'));
-//     }
+        $this->assertIsArray($result);
+        $this->assertTrue($result['success']);
 
-//     public function testDeleteFile(): void
-//     {
-//         file_put_contents($this->testFile, 'test');
-//         $this->assertFileExists($this->testFile);
-        
-//         $this->handler->deleteFile($this->testFile);
-        
-//         $this->assertFileDoesNotExist($this->testFile);
-//     }
+        unlink($tempFile);
+    }
 
-//     public function testCreateDirectory(): void
-//     {
-//         $newDir = $this->testDir . '/new_folder';
-//         $this->handler->createDirectory($newDir);
-        
-//         $this->assertDirectoryExists($newDir);
-//     }
+    #[Test]
+    public function testPutFileWithNonexistentFile(): void
+    {
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessageMatches('/Could not open filename/');
 
-//     public function testGetFileSize(): void
-//     {
-//         $content = 'Test content';
-//         file_put_contents($this->testFile, $content);
-        
-//         $size = $this->handler->getFileSize($this->testFile);
-        
-//         $this->assertEquals(strlen($content), $size);
-//     }
+        $this->handler->putFile('endpoint', '/nonexistent/path/to/file.txt');
+    }
 
-//     public function testAppendToFile(): void
-//     {
-//         $initial = 'Initial content';
-//         $append = ' appended text';
-//         file_put_contents($this->testFile, $initial);
-        
-//         $this->handler->appendToFile($this->testFile, $append);
-        
-//         $this->assertEquals($initial . $append, file_get_contents($this->testFile));
-//     }
+    #[Test]
+    public function testPutFileWithEndpointTrimming(): void
+    {
+        $tempFile = tempnam(sys_get_temp_dir(), 'test_');
+        file_put_contents($tempFile, 'test content');
 
-//     public function testListFiles(): void
-//     {
-//         file_put_contents($this->testDir . '/file1.txt', 'content1');
-//         file_put_contents($this->testDir . '/file2.txt', 'content2');
-//         mkdir($this->testDir . '/subdir');
-        
-//         $files = $this->handler->listFiles($this->testDir);
-        
-//         $this->assertIsArray($files);
-//         $this->assertGreaterThanOrEqual(2, count($files));
-//     }
+        $this->mockClient
+            ->expects($this->once())
+            ->method('_request')
+            ->with(
+                'POST',
+                'endpoint',
+                null,
+                [],
+                'test-tenant',
+                $this->anything()
+            )
+            ->willReturn([]);
 
-//     public function testGetFileExtension(): void
-//     {
-//         $extension = $this->handler->getFileExtension($this->testFile);
-        
-//         $this->assertEquals('txt', $extension);
-//     }
+        $this->handler->putFile('  /endpoint/ ', $tempFile);
 
-//     public function testCopyFile(): void
-//     {
-//         $content = 'Content to copy';
-//         file_put_contents($this->testFile, $content);
-//         $copyPath = $this->testDir . '/copy.txt';
-        
-//         $this->handler->copyFile($this->testFile, $copyPath);
-        
-//         $this->assertFileExists($copyPath);
-//         $this->assertEquals($content, file_get_contents($copyPath));
-//     }
+        unlink($tempFile);
+    }
 
-//     public function testMoveFile(): void
-//     {
-//         $content = 'Content to move';
-//         file_put_contents($this->testFile, $content);
-//         $movePath = $this->testDir . '/moved.txt';
+    #[Test]
+    public function testPutFileWithCustomTenantId(): void
+    {
+        $tempFile = tempnam(sys_get_temp_dir(), 'test_');
+        file_put_contents($tempFile, 'test content');
+
+        $this->mockClient
+            ->expects($this->once())
+            ->method('_request')
+            ->with(
+                'POST',
+                'endpoint',
+                null,
+                [],
+                'custom-tenant',
+                $this->anything()
+            )
+            ->willReturn([]);
+
+        $this->handler->putFile('endpoint', $tempFile, 'custom-tenant');
+
+        unlink($tempFile);
+    }
+
+    #[Test]
+    public function testPutFileWithCentralTenantId(): void
+    {
+        $tempFile = tempnam(sys_get_temp_dir(), 'test_');
+        file_put_contents($tempFile, 'test content');
+
+        $this->mockConfig->central_tenant_id = 'central-tenant';
+
+        $this->mockClient
+            ->expects($this->once())
+            ->method('_request')
+            ->with(
+                'POST',
+                'endpoint',
+                null,
+                [],
+                'central-tenant',
+                $this->anything()
+            )
+            ->willReturn([]);
+
+        $this->handler->putFile('endpoint', $tempFile);
+
+        unlink($tempFile);
+    }
+
+    #[Test]
+    public function testPostFileCallsPutFile(): void
+    {
+        $tempFile = tempnam(sys_get_temp_dir(), 'test_');
+        file_put_contents($tempFile, 'test content');
+
+        $this->mockClient
+            ->expects($this->once())
+            ->method('_request')
+            ->willReturn(['success' => true]);
+
+        $result = $this->handler->postFile('endpoint', $tempFile, 'test-tenant');
+
+        $this->assertIsArray($result);
+        $this->assertTrue($result['success']);
+
+        unlink($tempFile);
+    }
+
+    #[Test]
+    public function testPostFileWithException(): void
+    {
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessageMatches('/PutFile Error/');
+
+        $this->handler->postFile('endpoint', '/nonexistent/file.txt');
+    }
+
+    // #[Test]
+    // public function testGetFileCreatesFileAtDestination(): void
+    // {
+    //     $tempDir = sys_get_temp_dir();
+    //     $tempFile = $tempDir . DIRECTORY_SEPARATOR . 'get_test_' . uniqid() . '.pdf';
+    //     $url = 'https://example.com/file.pdf';
+
+    //     $mockGuzzleResponse = $this->createMock(\GuzzleHttp\Psr7\Response::class);
+    //     $mockGuzzleResponse->method('getStatusCode')->willReturn(200);
+
+    //     $mockGuzzleClient = $this->createMock(\GuzzleHttp\Client::class);
+    //     $mockGuzzleClient
+    //         ->expects($this->once())
+    //         ->method('get')
+    //         ->with($url, $this->anything())
+    //         ->willReturn($mockGuzzleResponse);
+
+    //     // Since getFile instantiates Client directly, we test the error path instead
+    //     $this->expectException(\Exception::class);
+    //     $this->expectExceptionMessageMatches('/GetFile Error/');
         
-//         $this->handler->moveFile($this->testFile, $movePath);
-        
-//         $this->assertFileDoesNotExist($this->testFile);
-//         $this->assertFileExists($movePath);
-//         $this->assertEquals($content, file_get_contents($movePath));
-//     }
-// }
+    //     $this->handler->getFile($tempFile, $url);
+    // }
+
+
+    #[Test]
+    public function testGetFileWithInvalidFilename(): void
+    {
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessageMatches('/GetFile Error/');
+
+        $invalidFile = '/nonexistent/directory/path/invalid_file_' . uniqid() . '.txt';
+        $this->handler->getFile($invalidFile, 'https://invalid-url-that-does-not-exist.com/file.pdf');
+    }
+
+    #[Test]
+    #[DataProvider('provideInvalidEndpoints')]
+    public function testPutFileWithVariousEndpointFormats(string $endpoint, string $expectedEndpoint): void
+    {
+        $tempFile = tempnam(sys_get_temp_dir(), 'test_');
+        file_put_contents($tempFile, 'test content');
+
+        $this->mockClient
+            ->expects($this->once())
+            ->method('_request')
+            ->with(
+                'POST',
+                $expectedEndpoint,
+                null,
+                [],
+                'test-tenant',
+                $this->anything()
+            )
+            ->willReturn([]);
+
+        $this->handler->putFile($endpoint, $tempFile);
+
+        unlink($tempFile);
+    }
+
+    public static function provideInvalidEndpoints(): array
+    {
+        return [
+            'endpoint with leading slash' => ['/endpoint', 'endpoint'],
+            'endpoint with trailing slash' => ['endpoint/', 'endpoint'],
+            'endpoint with both slashes' => ['/endpoint/', 'endpoint'],
+            'endpoint with spaces' => ['  endpoint  ', 'endpoint'],
+            'endpoint with tabs and newlines' => ["\tendpoint\n", 'endpoint'],
+        ];
+    }
+}

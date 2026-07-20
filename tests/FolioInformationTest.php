@@ -1,91 +1,119 @@
-<?php
+<?php declare(strict_types=1);
 
-namespace Tests;
+namespace phpFolioClient\Tests;
 
 use PHPUnit\Framework\TestCase;
 use phpFolioClient\FolioInformation;
 use phpFolioClient\FolioConfig;
 use phpFolioClient\FolioAuth;
-use phpFolioClient\FolioUtils;
-use phpFolioClient\FolioClient;
+use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\DataProvider;
 
-require_once 'src/bootstrap.php';
+class FolioInformationTest extends TestCase {
+    private FolioInformation $folioInformation;
+    private FolioConfig $mockConfig;
+    private FolioAuth $mockAuth;
 
-// class FolioInformationTest extends TestCase
-// {
-//     private FolioInformation $folioInfo;
+    protected function setUp(): void {
+        $this->mockConfig = $this->createMock(FolioConfig::class);
+        $this->mockAuth = $this->createMock(FolioAuth::class);
+        $this->folioInformation = new FolioInformation($this->mockConfig, $this->mockAuth);
+    }
 
-//     protected function setUp(): void
-//     {
-//         $hostname = 'lsedemo';
-//         $config = new FolioConfig($hostname . ".ini");
-//         $utils = new FolioUtils();
-//         $auth = new FolioAuth($config);
-//         $auth->getAccessToken();
-//         $folio = new FolioClient($config,$auth,$utils);
-//         $information = new FolioInformation($config,$auth);
-//         $this->folioInfo = new FolioInformation($config,$auth);
-//     }
+    #[Test]
+    public function testGetAuthFlavorReturnsAuthFlavorFromAuth(): void {
+        $this->mockAuth->method('getAuthFlavor')->willReturn('oauth2');
+        
+        $result = $this->folioInformation->getAuthFlavor();
+        
+        $this->assertEquals('oauth2', $result);
+    }
 
-//     public function testCanCreateInstance(): void
-//     {
-//         $this->assertInstanceOf(FolioInformation::class, $this->folioInfo);
-//     }
+    #[Test]
+    public function testGetUrlReturnsApiUrlFromConfig(): void {
+        $this->mockConfig->method('getApiUrl')->willReturn('https://api.example.com');
+        
+        $result = $this->folioInformation->getUrl();
+        
+        $this->assertEquals('https://api.example.com', $result);
+    }
 
-//     public function testCanSetAndGetId(): void
-//     {
-//         $this->assertEquals(123, $this->folioInfo->getId());
-//     }
+    #[Test]
+    public function testGetTenantIdReturnsTenantIdFromConfig(): void {
+        $this->mockConfig->tenant_id = 'tenant-123';
+        
+        $result = $this->folioInformation->getTenantId();
+        
+        $this->assertEquals('tenant-123', $result);
+    }
 
-//     public function testCanSetAndGetTitle(): void
-//     {
-//         $title = 'Test Portfolio';
-//         $this->assertEquals($title, $this->folioInfo->getTitle());
-//     }
+    #[Test]
+    public function testGetCentralTenantIdReturnsCentralTenantIdWhenSet(): void {
+        $this->mockConfig->central_tenant_id = 'central-tenant-456';
+        
+        $result = $this->folioInformation->getCentralTenantId();
+        
+        $this->assertEquals('central-tenant-456', $result);
+    }
 
-//     public function testCanSetAndGetDescription(): void
-//     {
-//         $description = 'A test portfolio description';
-//         $this->folioInfo->setDescription($description);
-//         $this->assertEquals($description, $this->folioInfo->getDescription());
-//     }
+    #[Test]
+    public function testGetCentralTenantIdReturnsEmptyStringWhenNotSet(): void {
+        $this->mockConfig->central_tenant_id = null;
+        
+        $result = $this->folioInformation->getCentralTenantId();
+        
+        $this->assertEquals('', $result);
+    }
 
-//     public function testCanSetAndGetAuthor(): void
-//     {
-//         $author = 'John Doe';
-//         $this->folioInfo->setAuthor($author);
-//         $this->assertEquals($author, $this->folioInfo->getAuthor());
-//     }
+    #[Test]
+    #[DataProvider('hostnameProvider')]
+    public function testGetHostnameExtractsSubdomainCorrectly(string $url, string $expected): void {
+        $this->mockConfig->method('getApiUrl')->willReturn($url);
+        
+        $result = $this->folioInformation->getHostname();
+        
+        $this->assertEquals($expected, $result);
+    }
 
-//     public function testCanSetAndGetCreatedAt(): void
-//     {
-//         $date = '2024-01-01';
-//         $this->folioInfo->setCreatedAt($date);
-//         $this->assertEquals($date, $this->folioInfo->getCreatedAt());
-//     }
+    public static function hostnameProvider(): array {
+        return [
+            'happy path - standard subdomain' => [
+                'https://demo.okapi.example.com/okapi',
+                'demo'
+            ],
+            'subdomain prefix to remove' => [
+                'https://subdomain-demo.example.com',
+                'demo'
+            ],
+            'okapi prefix to remove' => [
+                'https://okapi-demo.example.com',
+                'demo'
+            ],
+            'api prefix to remove' => [
+                'https://api-demo.example.com',
+                'demo'
+            ],
+            'kong prefix to remove' => [
+                'https://kong-demo.example.com',
+                'demo'
+            ],
+            'okapi suffix to remove' => [
+                'https://demo-okapi.example.com',
+                'demo'
+            ],
+            'single word hostname' => [
+                'https://localhost',
+                'localhost'
+            ],
+        ];
+    }
 
-//     public function testCanSetAndGetUpdatedAt(): void
-//     {
-//         $date = '2024-01-15';
-//         $this->folioInfo->setUpdatedAt($date);
-//         $this->assertEquals($date, $this->folioInfo->getUpdatedAt());
-//     }
-
-//     public function testCanSetAndGetIsActive(): void
-//     {
-//         $this->folioInfo->setIsActive(true);
-//         $this->assertTrue($this->folioInfo->getIsActive());
-
-//         $this->folioInfo->setIsActive(false);
-//         $this->assertFalse($this->folioInfo->getIsActive());
-//     }
-
-//     public function testInitialValuesAreNull(): void
-//     {
-//         $newFolio = new FolioInformation();
-//         $this->assertNull($newFolio->getId());
-//         $this->assertNull($newFolio->getTitle());
-//         $this->assertNull($newFolio->getDescription());
-//         $this->assertNull($newFolio->getAuthor());
-//     }
-// }
+    #[Test]
+    public function testGetUsernameReturnsUsernameFromConfig(): void {
+        $this->mockConfig->username = 'testuser';
+        
+        $result = $this->folioInformation->getUsername();
+        
+        $this->assertEquals('testuser', $result);
+    }
+}

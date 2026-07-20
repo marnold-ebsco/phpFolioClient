@@ -91,7 +91,7 @@ class FolioClient {
         }
     }
 
-    public function getEach(string $endpoint, ?string $query = null, array|object|null $params = null, ?string $key, ?string $tenant_id = null): \Generator {
+    public function getEach(string $endpoint, ?string $query = null, array|object|null $params = null, ?string $key = null, ?string $tenant_id = null): \Generator {
         return $this->get($endpoint, $query, $params, $key, $tenant_id);
     }
 
@@ -160,7 +160,7 @@ class FolioClient {
             $endpoint .= "/$id";
         }
 
-        $json = is_object($params) ? (array) $params : json_decode($params, true);
+        $json = is_object($params) ? (array) $params : (is_string($params) ? json_decode($params, true) : $params);
 
         $options = [
             'json' => $json,
@@ -175,7 +175,7 @@ class FolioClient {
             $endpoint .= "/$id";
         }
 
-        $json = is_object($params) ? (array) $params : json_decode($params, true);
+        $json = is_object($params) ? (array) $params : (is_string($params) ? json_decode($params, true) : $params);
 
         $options = [
             'json' => $json,
