@@ -1,0 +1,345 @@
+<?php declare(strict_types=1);
+namespace phpFolioClient;
+
+use GuzzleHttp\Client;
+use GuzzleHttp\Psr7\Request;
+use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\ServerException;
+use stdClass;
+
+/* stuff left to do
+    data export
+    data export all
+    data import
+    convenience functions
+    logging
+    exceptions
+
+ */
+
+
+class FolioClient {
+    public const RETURN_FULL_OBJECT = -1;
+
+    private FolioConfig $config;
+    private FolioAuth $auth;
+    private ?FolioLogger $logger;
+    private Client $httpClient;
+    private FolioUtils $folioUtils;
+    private FolioInformation $information;
+
+    private int $lastStatusCode;
+    private string $lastQuery = '';
+    private ?string $central_tenant_id = null;
+
+    private int $queryNum = 1;
+
+    private int $getAllDefaultLimit = 5000;
+
+    public function __construct(
+        FolioConfig $config,
+        FolioAuth $auth,
+        FolioUtils $folioUtils,
+        ?FolioLogger $logger = null,
+        ?FolioInformation $information = null,
+        ?Client $httpClient = null,
+        
+    ) {
+        $this->config = $config;
+        $this->auth = $auth;
+        $this->folioUtils = $folioUtils;
+        $this->logger = $logger;
+        $this->information = $information ?: new FolioInformation($config, $auth);
+
+        $this->httpClient = $httpClient ?: new Client([
+            'base_uri' => $this->config->okapiUrl,
+            'timeout'  => $this->config->timeout,
+            'verify'   => $this->config->sslVerify,
+        ]);
+    }
+
+    public function getConfig(){
+        return $this->config;
+    }
+
+    public function getAuth(){
+        return $this->auth;
+    }
+
+    public function get(string $endpoint, ?string $query = null, mixed $params = null, string|int|null $key = null, ?string $tenant_id = null): mixed {    
+        // get data
+        $response = $this->_request('GET', $endpoint, $query, $params, $tenant_id);
+        if ($key == self::RETURN_FULL_OBJECT) {     //return full object
+            return $response;
+        }
+        
+        // get implicit key and total records
+        $responseInfo = $this->_getResponseInfo($response);
+        $key ??= $responseInfo['key'];
+        
+        return $this->_yieldRecords($response, $key);   //return generator
+    }
+
+    public function getOne(string $endpoint, string $id, ?string $tenant_id = null): null|stdClass {
+        if($this->folioUtils->isValidUuid($id)){
+            $response = $this->get("$endpoint/$id",null,null,self::RETURN_FULL_OBJECT,$tenant_id);
+            return $response;
+        }else{
+            throw new \Exception("getOne must be passed a valid UUID");
+        }
+    }
+
+    public function getEach(string $endpoint, ?string $query = null, array|object|null $params = null, ?string $key = null, ?string $tenant_id = null): \Generator {
+        return $this->get($endpoint, $query, $params, $key, $tenant_id);
+    }
+
+
+    public function getAll_loop(string $endpoint, ?string $query = null, array|object|null $params = null, ?string $key = null, ?string $tenant_id = null)  {
+                $query = ($query ?? 'cql.allRecords=1') . ' sortBy id';     //set initial query
+                $params = (array)$params ?: [];
+                $params['offset'] = $params['offset'] ?? 0;
+                $params['limit'] = $params['limit'] ?? $this->getAllDefaultLimit;
+        
+        do {
+            // get data
+            $response = $this->_request('GET', $endpoint, $query, $params, $tenant_id);
+            // get implicit key and total records
+            $responseInfo = $this->_getResponseInfo($response);
+            $key ??= $responseInfo['key'];
+            
+            foreach ($response->$key as $result) {
+                yield $result;
+            }
+            
+            if ($params['offset'] + count($response->$key) >= $responseInfo['totalRecords']) {
+                break;
+            }
+            $params['offset'] += $params['limit'];
+        } while (true);
+    }
+
+    public function getAll(string $endpoint, ?string $query = null, array|object|null $params = null, ?string $key = null, ?string $tenant_id = null)  {
+        $query = ($query ?? 'cql.allRecords=1') . ' sortBy id';     //set initial query
+        $origQuery = (isset($query)) ? $query : $params['query'];
+        
+        $response = $this->_request('GET', $endpoint, $query, $params, $tenant_id);     // get first response
+
+        $responseInfo = $this->_getResponseInfo($response);
+        $key ??= $responseInfo['key'];
+
+        $records = $response->{$key};
+        if (empty($records)) {
+            return;
+        }
+        $end = end($records)->id;
+
+        foreach ($records as $record) {
+            yield $record;
+        }
+
+        // get subsequent batches
+        while ($responseInfo['totalRecords'] > 0) {
+            $query = 'id > "' . $end . '" and ' . $origQuery;
+            $response = $this->_request('GET', $endpoint, $query, $params, $tenant_id);
+            if (empty($response->{$key})) {
+                break;
+            }
+            $records = $response->{$key};
+            $count = count($records);
+            $end = $records[$count - 1]->id;
+            foreach ($records as $result) {
+                yield $result;
+            }
+        }
+    }
+
+    public function put(string $endpoint, ?string $id = null, array|object|null $params = null, ?string $tenant_id = null): void {
+        if ($id) {
+            $endpoint .= "/$id";
+        }
+
+        $json = is_object($params) ? (array) $params : (is_string($params) ? json_decode($params, true) : $params);
+
+        $options = [
+            'json' => $json,
+            'headers' => ['Accept' => 'text/plain']
+        ];
+
+        $this->_request('PUT', $endpoint, null, [], $tenant_id, $options);
+    }
+
+    public function patch(string $endpoint, ?string $id = null, array|object|null $params = null, ?string $tenant_id = null): void {
+        if ($id) {
+            $endpoint .= "/$id";
+        }
+
+        $json = is_object($params) ? (array) $params : (is_string($params) ? json_decode($params, true) : $params);
+
+        $options = [
+            'json' => $json,
+            'headers' => ['Content-Type' => 'application/json']
+        ];
+    
+        $this->_request('PATCH', $endpoint, null, [], $tenant_id, $options);
+    }
+
+    public function post(string $endpoint, array|object|string|null $params = null, ?string $tenant_id = null,?array $options = null): ?object {
+        $json = is_object($params) ? (array) $params : (is_string($params) ? json_decode($params, true) : $params);
+
+        $defaultOptions = [
+            'json' => $json,
+            'headers' => ['Accept' => 'text/plain', 'Content-Type' => 'application/json']
+        ];
+
+        $options = array_replace_recursive($defaultOptions, $options ?? []);
+
+        return $this->_request('POST', $endpoint, null , [], $tenant_id, $options);
+        
+    }
+
+    public function delete(string $endpoint, ?string $id = null, ?string $tenant_id = null): void {
+        if ($id) {
+            $endpoint .= "/$id";
+        }
+
+        $options = [
+            'headers' => ['Accept' => 'text/plain']
+        ];
+
+        $this->_request('DELETE', $endpoint, null, [], $tenant_id, $options);
+    }
+
+    public function _request(string $method, string $endpoint, ?string $query, array|null $params = [], ?string $tenant_id = null, array|null $options = []): array|object|null {
+        $params ??= [];
+        $method = strtoupper($method);
+        $uri = trim($endpoint, "/ \t\r\n\0");
+        
+        // Build query string (skip for PATCH requests)
+        // $queryString = $method !== 'PATCH' 
+        //     ? '?' . http_build_query($this->_handleParameters($method, $params, $query))
+        //     : '';
+
+        $queryString = !empty($this->_handleParameters($method, $params, $query))
+            ? '?' . http_build_query($this->_handleParameters($method, $params, $query))
+            : '';
+        
+        // Merge headers with defaults
+        $finalOptions = $this->_buildRequestOptions($options);
+        
+        $this->logger->log("$method: $uri$queryString",$this->queryNum);
+        $this->lastQuery = "{$method}: {$uri}";
+        try {
+            $response = $this->httpClient->request($method, $uri . $queryString, $finalOptions);
+            $this->lastStatusCode = $response->getStatusCode();
+
+            if ($response->hasHeader('Content-Length')) {
+                // getHeader() returns an array; access index 0 for the value
+                $len = (int) $response->getHeader('Content-Length')[0];
+                $contentLength = "Content Length: " . $len;
+            } else {
+                $contentLength =  "";
+            }
+
+            $this->logger->log("Status code: " . $this->lastStatusCode,$this->queryNum,$contentLength);
+
+            return json_decode((string)$response->getBody()->getContents(), false);
+        } catch (ClientException|ServerException $e) {
+            $this->logger->log("HTTP error on {$this->lastQuery}: " . $e->getMessage(),$this->queryNum);
+            throw $e;
+        } catch (ConnectException $e) {
+            $this->logger->log("Connection error on {$this->lastQuery}: " . $e->getMessage(),$this->queryNum);
+            throw $e;
+        }finally{
+            $this->queryNum++;
+        }
+    }
+
+    private function _buildRequestOptions(array|null $options = []): array {
+        $defaultHeaders = [
+            'X-Okapi-Tenant' => $this->config->tenant_id,
+            'X-Okapi-Token'  => $this->auth->getAccessToken(),
+            'Accept'         => 'application/json',
+        ];
+        
+        $options ??= [];
+        $customHeaders = $options['headers'] ?? [];
+        unset($options['headers']);
+        
+        return array_replace(
+            ['headers' => $defaultHeaders],
+            $options,
+            ['headers' => array_replace($defaultHeaders, $customHeaders)]
+        );
+    }
+
+    // Utility functions
+    private function _handleParameters(string $method, array|null $params,?string $query = null): array {
+        $paramArray = match (gettype($params)) {
+            'object' => (array) $params,
+            'array' => $params,
+            'string' => $this->folioUtils->isJson($params) ? (array) json_decode($params) : ($this->folioUtils->isValidUuid($params)
+                ? ['query' => 'id="' . $params . '"'] : []),
+            default => [],
+        };
+
+        // set defaults
+        if($method == 'GET'){
+            $paramArray['limit'] = ($paramArray['limit'] ?? 0) > 0 ? $paramArray['limit'] : $this->getAllDefaultLimit;
+            $paramArray['offset'] = $paramArray['offset'] ?? 0;
+            $paramArray['query'] = ($paramArray['query'] ?? 'cql.allRecords=1') . ' sortBy id';
+        }
+
+        // if query is explicitly set, override implicit 
+        $paramArray['query'] = $query ?? '';
+        if(empty($paramArray['query'])){
+            unset($paramArray['query']);
+        }
+        return $paramArray;
+    }
+
+    private function _getResponseInfo(stdClass $jsonObject){
+        // perform introspection on json object to get key
+        $properties = get_object_vars($jsonObject);
+        $arrayKeys = array_keys(array_filter($properties, 'is_array'));
+        $key = array_diff($arrayKeys, ['errors'])[0];
+        $totalRecords = $jsonObject->totalRecords ?? null;
+        return ['key' => $key, 'totalRecords' => $totalRecords];
+    }
+
+    private function _yieldRecords(array|object $response, string $key): \Generator {
+        if (!empty($response->{$key})) {
+            foreach ($response->{$key} as $record) {
+                yield $record;
+            }
+        }
+    }
+    
+    public function __debugInfo(): array {
+        $vars = get_object_vars($this);
+        unset($vars['password'],$vars['token'],$vars['folioRefreshToken'],$vars['folioAccessToken']);
+        return $vars;
+    }
+
+    // information functions
+    public function getInformation(): FolioInformation {
+        return $this->information;
+    }
+
+    public function getLastStatusCode(): int {
+        return $this->lastStatusCode;
+    }
+
+    public function getStatusCode(): int {
+        return $this->lastStatusCode;
+    }
+
+    public function getLastQuery(): string {
+        return $this->lastQuery;
+    }
+
+    public function getLastQueryNum(): int {
+        return $this->queryNum;
+    }
+}
