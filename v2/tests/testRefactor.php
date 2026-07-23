@@ -48,8 +48,9 @@ try{
 
 // $exportHandler->dataExport("/home/marnold/phpFolioClient2/testExport.csv");
 // exit;
-print "Export all marc data\n";
-$exportHandler->dataExportAll();
+
+// print "Export all marc data\n";
+// $exportHandler->dataExportAll();
 
 
 $locNames = $refData->getLocations();

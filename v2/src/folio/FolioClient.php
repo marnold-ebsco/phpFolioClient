@@ -155,7 +155,7 @@ class FolioClient {
         }
     }
 
-    public function put(string $endpoint, ?string $id = null, array|object|null $params = null, ?string $tenant_id = null): void {
+    public function put(string $endpoint, ?string $id = null, mixed $params = null, ?string $tenant_id = null): void {
         if ($id) {
             $endpoint .= "/$id";
         }
@@ -185,7 +185,7 @@ class FolioClient {
         $this->_request('PATCH', $endpoint, null, [], $tenant_id, $options);
     }
 
-    public function post(string $endpoint, array|object|string|null $params = null, ?string $tenant_id = null,?array $options = null): ?object {
+    public function post(string $endpoint, fixed $params = null, ?string $tenant_id = null,?array $options = null): ?object {
         $json = is_object($params) ? (array) $params : (is_string($params) ? json_decode($params, true) : $params);
 
         $defaultOptions = [

@@ -461,7 +461,7 @@ class phpFolioClient {
         }
     }
 
-    public function post(string $endpoint,array|object|null $params = null,array|null $extraOptions = null,string|null $tenant_id = null): object|array|null {
+    public function post(string $endpoint,mixed $params = null,array|null $extraOptions = null,string|null $tenant_id = null): object|array|null {
         $tenant_id ??= $this->central_tenant_id ?? $this->tenant_id;
         
         if(is_object($params)){
@@ -483,7 +483,7 @@ class phpFolioClient {
         }
     }
 
-    public function put(string $endpoint,string $id,array|object|null $params, array|null $extraOptions = null, string|null $tenant_id = null): object|array|null {
+    public function put(string $endpoint,string $id,mixed $params, array|null $extraOptions = null, string|null $tenant_id = null): object|array|null {
         $tenant_id ??= $this->central_tenant_id ?? $this->tenant_id;
         
         if(is_object($params)){
