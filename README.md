@@ -77,3 +77,19 @@ Look at the test.php file in the vendor/marnold-ebsco/phpfolioclient/tests/ fold
 
 #Version 2
 
+{
+    "minimum-stability": "beta",
+    "prefer-stable": true,
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/marnold-ebsco/phpfolioclient.git"
+        }
+    ],
+    "require": {
+        "marnold-ebsco/phpfolioclient": "^v2.0.0-beta1"
+    }
+}
+
+git clone https://github.com/marnold-ebsco/phpFolioClient.git && cd phpFolioClient/v2 && composer install
+
