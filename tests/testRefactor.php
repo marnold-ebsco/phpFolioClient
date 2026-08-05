@@ -52,6 +52,7 @@ try{
 // print "Export all marc data\n";
 // $exportHandler->dataExportAll();
 
+print "Version: " . $folio->getVersion() . PHP_EOL;
 
 $locNames = $refData->getLocations();
 print "Location names count: " . sizeof($locNames) . PHP_EOL;
