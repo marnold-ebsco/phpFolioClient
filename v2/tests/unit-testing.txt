@@ -1,5 +1,0 @@
-To run phpunit tests:
-./vendor/bin/phpunit tests
-
-to run integration tests
-php tests/test.php
