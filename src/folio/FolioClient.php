@@ -21,6 +21,7 @@ use stdClass;
 
 
 class FolioClient {
+    public const VERSION = '2.0.3';
     public const RETURN_FULL_OBJECT = -1;
 
     private FolioConfig $config;
@@ -409,6 +410,11 @@ class FolioClient {
     }
 
     // information functions
+
+    public function getVersion(): string {
+        return self::VERSION;
+    }
+
     public function getInformation(): FolioInformation {
         return $this->information;
     }
