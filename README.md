@@ -2,7 +2,7 @@
 
 phpFolioClient is utility that can be used to interact with the FOLIO Library Management System (https://folio.org/). It allows users to use FOLIO's APIs without having to worry about authenticating, re-authenticating on long running scripts, or dealing with CURL calls/HTTP requests. There are two versions. Version 1 is a single class that does everything. Version 2 was split up into separate classes because Version 1 was becoming too unwieldy. Documention for the FOLIO APIs can be found here: https://dev.folio.org/reference/api/.
 
-#Version 1
+# Version 1
 This version still works, but any new features will only be added to v2. 
 ## Installation
 
@@ -76,7 +76,7 @@ try{
 ## Running queries
 Look at the test.php file in the vendor/marnold-ebsco/phpfolioclient/tests/ folder for examples of how to run queries, insert, update, and delete records.
 
-# get
+## get
 To get data from FOLIO you have four options:
 get:
     At a minimum, pass the API endpoint
@@ -101,24 +101,24 @@ getAll:
 getAll_by_id_offset:
     getAll_by_id_offset uses the same structure as getAll. The difference is on the backend. getAll_by_id_offset grabs the next set of records in a different way than getAll. If you are working with larger data sets this can be substantially faster.
 
-# put
+## put
 Put is used to update a record. You will need to retrieve the record first, make what changes, and then put the record back. You will need the API endpoint, the UUID of the record you are changing, and the changed record. Only one record can be updated at a time. Put looks something like this:
 ```php
 $folio->put('material-types',$materialTypeObject->id,$materialTypeObject)
 ```
-# post
+## post
 Post is used to create a new record. You will need the API endpoint and the new record object. (See the documentation ). Post can only create one record at a time. Post looks something like this:
 ```php
 $folio->post('material-types',$materialTypeObject)
 ```
 
-# delete
+## delete
 Delete is used to delete a record or an entire set of records. Needless to say, this can be a dangerous command. At a minimum, delete just needs an endpoint, but it may without discrimination delete every record created with that endpoint. In almost every case you will want to pass the UUID of one object that you want to delete. Something like this:
 ```php
     $folio->delete('material-types',$id);
 ```
 
-#Version 2
+# Version 2
 
 ### composer.json
 
