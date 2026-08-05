@@ -183,7 +183,7 @@ use phpFolioClient\FolioReferenceDataManager;
 Put, Post, and Delete works the same as in version 1. Get has been substantially reworked however. There are now 5 different flavors of get:
 get: As in version 1, get can return the entire response object which must then be disassembled. It requires an extra parameter. The parameters to be passed are the API endpoint, the query (which has been separated out from the parameter array), an array of parameters to pass to the endpoint, and a constant that tells the class to return the full response object.
 ```php
-$folio->get('locations',null,['limit'=>5],FolioClient::RETURN_FULL_OBJECT)
+$folio->get('locations','cql.allRecords=1',['limit'=>5],FolioClient::RETURN_FULL_OBJECT)
 ```
 
 Without the RETURN_FULL_OBJECT constant, get return one record at a time. Note that for a large number of records this could be slow. Use getAll instead. It would be used something like this:
@@ -194,7 +194,7 @@ foreach($folio->get('locations') as $value){
 ```
 Note that the name of the array of objects returned does not need to be explicitly set. The class will attempt to derive that key from the data returned. A key can be explicitly set however:
 ```php
-foreach($folio->get('locations',null,['limit'=>5],key: 'locations') as $value){
+foreach($folio->get('locations','cql.allRecords=1',['limit'=>5],key: 'locations') as $value){
     print_r($value);
 }
 ```
@@ -209,9 +209,17 @@ foreach($folio->getEach('locations') as $value){
 }
 ```
 
-getAll is functionally equivalent to getAll_by_id_offset in v1. It is called like this:
+getAll is functionally equivalent to getAll_by_id_offset in v1. It can be used for both small and large datasets. It is called like this:
 ```php
-foreach($folio->getAll('instance-storage/instances',null,['limit'=>5000]) as $value){
+foreach($folio->getAll('instance-storage/instances','cql.allRecords=1',['limit'=>5000]) as $value){
+    $count++;
+}
+```
+
+getAll_loop is functionally equivalent to the old getAll. It should be used mainly for smaller datasets. It can be substantially slower than getAll. It is called like this:
+```php
+foreach($folio->getAll_loop('instance-storage/instances','cql.allRecords=1',['limit'=>5000]) as $value){
+    // print_r($value);
     $count++;
 }
 ```

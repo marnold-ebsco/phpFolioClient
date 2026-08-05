@@ -9,3 +9,7 @@ lsedemo.ini
 test*.mrc
 test*.csv
 
+debugText.txt
+folioClientLog_bu.txt
+instance-all-3035.mrc
+phpFolioClient2.code-workspace
