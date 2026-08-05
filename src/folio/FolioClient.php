@@ -68,6 +68,18 @@ class FolioClient {
         return $this->auth;
     }
 
+    /* 
+        use for small data sets.
+        call with these parameters:
+        $endpoint: API endpoint (required)
+        $query: CQL query or null (optional)
+        $params: array of CQL parameters (offset, limit, etc. optional)
+        $key: name of array of records returned in response object (optional)
+          if key is set to self::RETURN_FULL_OBJECT, full response object will be returned
+          (useful if you need to know the number of records returned)
+          if $key is set or null, returns one record at a time so should be called in a loop
+        $tenant_id: id of tenant when querying against ECS environment
+     */ 
     public function get(string $endpoint, ?string $query = null, mixed $params = null, string|int|null $key = null, ?string $tenant_id = null): mixed {    
         // get data
         $response = $this->_request('GET', $endpoint, $query, $params, $tenant_id);
@@ -82,6 +94,12 @@ class FolioClient {
         return $this->_yieldRecords($response, $key);   //return generator
     }
 
+    /* 
+        call with these parameters:
+        $endpoint: API endpoint (required)
+        $id: UUID of record of interest
+        $tenant_id: id of tenant when querying against ECS environment
+     */ 
     public function getOne(string $endpoint, string $id, ?string $tenant_id = null): null|stdClass {
         if($this->folioUtils->isValidUuid($id)){
             $response = $this->get("$endpoint/$id",null,null,self::RETURN_FULL_OBJECT,$tenant_id);
@@ -91,11 +109,34 @@ class FolioClient {
         }
     }
 
+     /* 
+        alias for get
+        call with these parameters:
+        $endpoint: API endpoint (required)
+        $query: CQL query or null (optional)
+        $params: array of CQL parameters (offset, limit, etc. optional)
+        $key: name of array of records returned in response object (optional)
+          if key is set to self::RETURN_FULL_OBJECT, full response object will be returned
+          (useful if you need to know the number of records returned)
+          if $key is set or null, returns one record at a time so should be called in a loop
+        $tenant_id: id of tenant when querying against ECS environment
+     */  
     public function getEach(string $endpoint, ?string $query = null, array|object|null $params = null, ?string $key = null, ?string $tenant_id = null): \Generator {
         return $this->get($endpoint, $query, $params, $key, $tenant_id);
     }
 
-
+     /* 
+        use for small to midsize data sets. Not optimized for speed
+        call with these parameters:
+        $endpoint: API endpoint (required)
+        $query: CQL query or null (optional)
+        $params: array of CQL parameters (offset, limit, etc. optional)
+        $key: name of array of records returned in response object (optional)
+          if key is set to self::RETURN_FULL_OBJECT, full response object will be returned
+          (useful if you need to know the number of records returned)
+          if $key is set or null, returns one record at a time so should be called in a loop
+        $tenant_id: id of tenant when querying against ECS environment
+     */ 
     public function getAll_loop(string $endpoint, ?string $query = null, array|object|null $params = null, ?string $key = null, ?string $tenant_id = null)  {
                 $query = ($query ?? 'cql.allRecords=1') . ' sortBy id';     //set initial query
                 $params = (array)$params ?: [];
@@ -120,6 +161,18 @@ class FolioClient {
         } while (true);
     }
 
+    /* 
+        use for midsize to large data sets. Optimized for speed
+        call with these parameters:
+        $endpoint: API endpoint (required)
+        $query: CQL query or null (optional)
+        $params: array of CQL parameters (offset, limit, etc. optional)
+        $key: name of array of records returned in response object (optional)
+          if key is set to self::RETURN_FULL_OBJECT, full response object will be returned
+          (useful if you need to know the number of records returned)
+          if $key is set or null, returns one record at a time so should be called in a loop
+        $tenant_id: id of tenant when querying against ECS environment
+     */ 
     public function getAll(string $endpoint, ?string $query = null, array|object|null $params = null, ?string $key = null, ?string $tenant_id = null)  {
         $query = ($query ?? 'cql.allRecords=1') . ' sortBy id';     //set initial query
         $origQuery = (isset($query)) ? $query : $params['query'];
@@ -155,6 +208,15 @@ class FolioClient {
         }
     }
 
+    /* 
+        use for midsize to large data sets. Optimized for speed
+        call with these parameters:
+        $endpoint: API endpoint (required)
+        $id: UUID of record of interest (required)
+        $params: array of CQL parameters (offset, limit, etc. optional)
+        $tenant_id: id of tenant when querying against ECS environment
+        Unlike get, only one record is returned without the normal response structure
+     */
     public function put(string $endpoint, ?string $id = null, mixed $params = null, ?string $tenant_id = null): void {
         if ($id) {
             $endpoint .= "/$id";
@@ -170,6 +232,14 @@ class FolioClient {
         $this->_request('PUT', $endpoint, null, [], $tenant_id, $options);
     }
 
+    /* 
+        Unfortunately only useful for a very small number of endpoints
+        call with these parameters:
+        $endpoint: API endpoint (required)
+        $id: UUID of record of interest (required)
+        $params: array of CQL parameters (offset, limit, etc. optional)
+        $tenant_id: id of tenant when querying against ECS environment
+     */
     public function patch(string $endpoint, ?string $id = null, array|object|null $params = null, ?string $tenant_id = null): void {
         if ($id) {
             $endpoint .= "/$id";
@@ -185,6 +255,12 @@ class FolioClient {
         $this->_request('PATCH', $endpoint, null, [], $tenant_id, $options);
     }
 
+    /* 
+        call with these parameters:
+        $endpoint: API endpoint (required)
+        $params: properly formed json object
+        $tenant_id: id of tenant when querying against ECS environment
+     */
     public function post(string $endpoint, mixed $params = null, ?string $tenant_id = null,?array $options = null): ?object {
         $json = is_object($params) ? (array) $params : (is_string($params) ? json_decode($params, true) : $params);
 
@@ -199,6 +275,13 @@ class FolioClient {
         
     }
 
+    /* 
+        use with extreme caution. If called without an id, some endpoints will delete every record
+        call with these parameters:
+        $endpoint: API endpoint (required)
+        $id: UUID of record of interest
+        $tenant_id: id of tenant when querying against ECS environment
+     */
     public function delete(string $endpoint, ?string $id = null, ?string $tenant_id = null): void {
         if ($id) {
             $endpoint .= "/$id";
@@ -211,6 +294,9 @@ class FolioClient {
         $this->_request('DELETE', $endpoint, null, [], $tenant_id, $options);
     }
 
+    /*
+        internal function that actually makes the API call and handles the response
+     */
     public function _request(string $method, string $endpoint, ?string $query, array|null $params = [], ?string $tenant_id = null, array|null $options = []): array|object|null {
         $params ??= [];
         $method = strtoupper($method);
