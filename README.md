@@ -154,6 +154,7 @@ require_once('vendor/autoload.php');
 
 use phpFolioClient\FolioConfig;
 use phpFolioClient\FolioAuth;
+use phpFolioClient\FolioLogger;
 use phpFolioClient\FolioClient;
 use phpFolioClient\FolioUtils;
 use phpFolioClient\FolioInformation;
@@ -162,7 +163,17 @@ use phpFolioClient\FolioReferenceDataManager;
 $hostname = {hostname}; //this must match an existing .ini file
 
 try{
-    $folio = new phpFolioClient($hostname . ".ini");
+    $config = new FolioConfig($hostname . ".ini");
+    $utils = new FolioUtils();
+    $auth = new FolioAuth($config);
+    $logger = new FolioLogger('folioClientLog.txt');
+    $information = new FolioInformation($config,$auth);
+
+    $folio = new FolioClient($config,$auth,$utils,$logger);
+    
+    $refData = new FolioReferenceDataManager($folio);
+    $fileHandler = new FolioFileHandler($folio);
+
 }catch(Exception $e){
     print "Error: " . $e->getMessage();
     exit;
