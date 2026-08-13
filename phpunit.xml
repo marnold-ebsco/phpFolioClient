@@ -1,14 +1,17 @@
-<phpunit colors="true" bootstrap="vendor/autoload.php" displayDetailsOnTestsThatTriggerWarnings="true"
-        displayDetailsOnTestsThatTriggerDeprecations="true" displayDetailsOnPhpunitDeprecations="true" 
-        displayDetailsOnTestsThatTriggerNotices="true" failOnNotice="true"
-        displayDetailsOnSkippedTests="true" >
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+         cacheDirectory=".phpunit.cache">
+    <testsuites>
+        <testsuite name="phpFolioClient">
+            <directory>tests</directory>
+        </testsuite>
+    </testsuites>
     <source>
         <include>
-            <directory>tests</directory>
+            <directory suffix=".php">src</directory>
         </include>
-        <exclude>
-            <file>tests/test.php</file>
-        </exclude>
     </source>
 </phpunit>
-

@@ -13,8 +13,10 @@ Severity legend: 🔴 High (crash / data loss / security) · 🟡 Medium · ⚪ 
 **Status: every bug (B1–B27) and security issue (S1–S3, S5) has been fixed. S4 remains an
 open documented limitation (no reliable general fix exists). Every design/consistency issue
 (D1, D3, D5–D12) has been fixed; D2 and D4 were deliberately left as documentation-only
-(see their entries below for why). Four extra latent bugs turned up while fixing the above
-and were fixed too — see [§0](#0-extra-issues-found-while-fixing-the-above).**
+(see their entries below for why). Five extra latent bugs turned up while fixing the above
+and while writing the test suite (`tests/`) — see
+[§0](#0-extra-issues-found-while-fixing-the-above). All 135 tests pass; see
+[README.md](README.md#running-tests) for how to run them.**
 
 ---
 
@@ -107,6 +109,26 @@ These weren't in the original 27-bug list — they turned up while touching the 
 code for other fixes, and were fixed in the same pass since they're the same class of bug
 and low-risk to address:
 
+- **🔴 `FolioClient::_handleParameters()` silently dropped every implicit CQL query
+  whenever `$query` was `null`** — found while writing unit tests for the retry/backoff
+  and B3 fixes. The final lines were:
+  ```php
+  $paramArray['query'] = $query ?? '';
+  if (empty($paramArray['query'])) { unset($paramArray['query']); }
+  ```
+  This unconditionally overwrote whatever implicit query had just been built a few lines
+  above (either the `'cql.allRecords=1 sortBy id'` GET default, or a UUID-derived
+  `id="..."` filter) with an empty string whenever the caller didn't pass an explicit
+  `$query` — which then got `unset()` for being empty. Before the B3 fix, this bug was
+  unreachable for the UUID-string case (a `TypeError` fired first), which is likely why it
+  went unnoticed. But it affected the **far more common path**: any `get()`/`getAll()`/
+  `getAll_loop()` call made *without* an explicit `$query` argument (the normal way to
+  request "all records") was silently sending no `query` parameter to FOLIO at all,
+  instead of the intended `cql.allRecords=1 sortBy id` default. **Fixed** by only
+  overwriting `$paramArray['query']` when `$query !== null`, so the implicit default (or
+  UUID-derived filter) survives when no explicit query is given, exactly as the existing
+  docblock already claimed. Covered by `FolioClientTest::testHandleParametersAcceptsUuidString()`
+  and the passing GET-default behavior exercised throughout the rest of the suite.
 - **`FolioConfig::$central_tenant_id` was an uninitialized typed property** (the same bug
   as B2) — calling `getCentralTenantId()` before the optional `central_tenant_id` config key
   was ever set would throw `Error: must not be accessed before initialization`. Now defaults to `null`.

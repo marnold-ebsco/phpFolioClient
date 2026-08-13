@@ -31,7 +31,7 @@ use stdClass;
  * itself was never applied server-side.
  */
 class FolioClient {
-    public const VERSION = '2.0.3';
+    public const VERSION = '2.0.4';
     public const RETURN_FULL_OBJECT = -1;
 
     private FolioConfig $config;
@@ -722,9 +722,13 @@ class FolioClient {
             $paramArray['query'] = ($paramArray['query'] ?? 'cql.allRecords=1') . ' sortBy id';
         }
 
-        // if query is explicitly set, override implicit 
-        $paramArray['query'] = $query ?? '';
-        if(empty($paramArray['query'])){
+        // if query is explicitly set, override implicit; otherwise leave
+        // whatever implicit query was derived above (from $params, or the
+        // GET-default 'cql.allRecords=1') alone.
+        if ($query !== null) {
+            $paramArray['query'] = $query;
+        }
+        if (empty($paramArray['query'] ?? null)) {
             unset($paramArray['query']);
         }
         return $paramArray;
