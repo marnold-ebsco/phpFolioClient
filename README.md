@@ -1,237 +1,249 @@
-# phpFolioClient readme
+# phpFolioClient
 
-phpFolioClient is utility that can be used to interact with the FOLIO Library Management System (https://folio.org/). It allows users to use FOLIO's APIs without having to worry about authenticating, re-authenticating on long running scripts, or dealing with CURL calls/HTTP requests. There are two versions. Version 1 is a single class that does everything. Version 2 was split up into separate classes because Version 1 was becoming too unwieldy. Documention for the FOLIO APIs can be found here: https://dev.folio.org/reference/api/.
+A lightweight PHP client library for calling [FOLIO](https://folio.org) library
+services platform APIs over Okapi. Wraps [Guzzle](https://docs.guzzlephp.org/) to handle
+authentication (Refresh Token Rotation), pagination, reference-data lookups, and the
+multi-step data-export workflow.
 
-# Version 1
-This version still works, but any new features will only be added to v2. 
-## Installation
+> **Known issues:** this library has undergone code review. See [ISSUES.md](ISSUES.md) for
+> the full list of bugs, security issues, and design inconsistencies found, and exactly what
+> changed for each one. As of the latest pass, every bug and security issue found has been
+> fixed except one open documented limitation (unredacted PII in logs, [S4](ISSUES.md)) and
+> two deliberately-left-as-documentation-only design notes ([D2](ISSUES.md#d2), D4).
 
-To deploy, copy the `composer.json` file (or create a new one) to the root of your working directory.
+All classes live in namespace `phpFolioClient` and use `declare(strict_types=1)`.
 
-### composer.json
+---
 
-```json
-{
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/marnold-ebsco/phpfolioclient.git"
-        }
-    ],
-    "require": {
-        "marnold-ebsco/phpfolioclient": "^0.9.0"
-    }
+## Architecture
+
+```
+FolioConfig                    (standalone value object — holds connection/credential settings)
+FolioUtils                     (standalone — UUID/JSON validation helpers)
+FolioLogger                    (standalone — tab-delimited query log file)
+
+FolioAuth(config)               depends on: FolioConfig
+    │                           talks to POST /authn/login directly via its own Guzzle client
+    ▼
+FolioInformation(config, auth)  depends on: FolioConfig, FolioAuth
+    │                           read-only tenant/environment metadata accessor
+    ▼
+FolioClient(config, auth, folioUtils, logger?, information?, httpClient?)
+    │                           the core HTTP client — GET/PUT/PATCH/POST/DELETE + pagination
+    │
+    ├── FolioFileHandler(client)
+    │       │                   binary upload/download (file-definitions, export downloads)
+    │       ▼
+    │   FolioDataExport(client, fileHandler)
+    │                           orchestrates the data-export workflow end to end
+    │
+    └── FolioReferenceDataManager(client)
+                                convenience wrappers for reference/control-vocabulary data
+```
+
+`FolioFileHandler` and `FolioReferenceDataManager` both call `FolioClient::rawRequest()`
+(a thin public wrapper around the private `_request()`) rather than going through
+`get()`/`post()`/etc. — this is the sanctioned low-level entry point for classes in this
+library that need it; general application code should stick to `get()`/`getOne()`/`getAll()`/
+`getAll_loop()`/`getEach()`/`put()`/`patch()`/`post()`/`delete()`.
+
+---
+
+## Setup
+
+This directory has its own [composer.json](composer.json) (requiring `guzzlehttp/guzzle`,
+plus `phpunit/phpunit` as a dev dependency for the test suite). From this directory:
+
+```bash
+composer install
+```
+
+This sets up PSR-4 autoloading for the `phpFolioClient` namespace automatically. If you'd
+rather integrate this library into an existing Composer project instead, copy the
+`require` entry from `composer.json` and point your own PSR-4 autoload mapping at this directory.
+
+### Configuration
+
+`FolioConfig` accepts a path to an INI file, an associative array, or an object.
+
+Required keys: `okapiUrl`, `tenant_id`, `username`, `password`.
+Optional keys: `central_tenant_id`, `sslVerify` (default `true`), `debug` (default `false`),
+`timeout` (default `30`), `localTimeZone` (default `America/Chicago`).
+
+```php
+$config = new FolioConfig([
+    'okapiUrl'  => 'https://okapi.example.edu',
+    'tenant_id' => 'diku',
+    'username'  => 'diku_admin',
+    'password'  => getenv('FOLIO_PASSWORD'), // never hardcode credentials
+]);
+```
+
+
+### Wiring the client together
+
+```php
+use phpFolioClient\{FolioConfig, FolioAuth, FolioUtils, FolioLogger, FolioClient};
+
+$config  = new FolioConfig($configArrayOrIniPath);
+$auth    = new FolioAuth($config);
+$logger  = new FolioLogger('/var/log/folio-client.log', debug: false, timezone: $config->localTimeZone);
+$client  = new FolioClient($config, $auth, new FolioUtils(), $logger);
+```
+
+Passing `$config->localTimeZone` to `FolioLogger` is optional (it defaults to
+`'America/Chicago'` on its own) but keeps log timestamps consistent with `FolioAuth`'s
+token-expiration timezone.
+
+`FolioClient` will build its own Guzzle client from `$config` if none is injected, and its
+own `FolioInformation` if none is injected — you don't need to construct those yourself in
+the common case.
+
+### Retries
+
+`FolioClient` automatically retries `GET`/`PUT`/`DELETE`/`HEAD` requests (idempotent methods
+only — never `POST`/`PATCH`) with exponential backoff on connection failures, 5xx server
+errors, and HTTP 429 (respecting a `Retry-After` header if the server sends one). This is on
+by default (3 retries, 200ms base delay) and configurable via two trailing constructor
+parameters:
+
+```php
+$client = new FolioClient($config, $auth, new FolioUtils(), $logger, maxRetries: 5, retryBaseDelayMs: 300);
+```
+
+Pass `maxRetries: 0` to disable retries entirely.
+
+---
+
+## Usage
+
+### Fetching records
+
+```php
+// small result sets: returns a Generator of records, one at a time
+foreach ($client->get('/inventory/instances', 'title="the great gatsby"') as $instance) {
+    echo $instance->id, "\n";
+}
+
+// fetch one record by id (validates the id is a UUID first)
+$instance = $client->getOne('/inventory/instances', $instanceId);
+
+// full pagination for large result sets (fast: uses an `id >` cursor)
+foreach ($client->getAll('/inventory/instances') as $instance) {
+    echo $instance->id, "\n";
 }
 ```
 
-Then run:
+`get()`'s `$key` parameter lets you get the raw response object instead of a record
+generator — pass `FolioClient::RETURN_FULL_OBJECT` when you need `totalRecords` or other
+envelope metadata rather than the records themselves.
 
-```bash
-composer require marnold-ebsco/phpfolioclient:^0.9.0
-```
-
-create an ini file using this template:
-```bash
-name        = 
-okapiUrl    = 
-tenant_id   = 
-username    = 
-password    = 
-sslVerify   = "vendor/marnold-ebsco/phpfolioclient/src/folio/cacert.pem"
-```
-
-save the template as {hostname}.ini
-The ini above will use the cacert.pem that is part of the upload. You can set sslVerify to 'true' to use the default CA bundle for you system (if available). You can modify your php.ini file to to set your cacert file as the default by adding/uncommenting these keys:
-```bash
-curl.cainfo = "C:/path/to/cacert.pem"
-openssl.cafile = "C:/path/to/cacert.pem"
-```
-
-You can find the lastest cacert.pem file here: https://curl.se/docs/caextract.html. Set the path to the cacert in the .ini file.
-
-If necessary, you can set sslVerify to false. This is not secure and is not recommended.
-
-
-## Using the package
-### initialize the phpFolioClient class
-Create a new php file that will run your script. Include something like this at the beginning of your file:
+### Writing records
 
 ```php
-<?php
-require_once('vendor/autoload.php');
-
-use phpFolioClient\phpFolioClient;
-
-$hostname = {hostname}; //this must match an existing .ini file
-
-try{
-    $folio = new phpFolioClient($hostname . ".ini");
-}catch(Exception $e){
-    print "Error: " . $e->getMessage();
-    exit;
-}
-
-?>
-```
-## Running queries
-Look at the test.php file in the vendor/marnold-ebsco/phpfolioclient/tests/ folder for examples of how to run queries, insert, update, and delete records.
-
-## get
-To get data from FOLIO you have four options:
-get:
-    At a minimum, pass the API endpoint
-    ```php
-    $response = $folio->get('loan-types');
-    ```
-    FOLIO will return a response object which you will need to disassemble to get the data you need.
-    You can send an array of parameters to pass to the endpoint. For example you can send CQL queries, establish the number of records returned, and set offsets using something like this:
-    $response = $folio->get('endpoint',['query'=>'cql.allRecords=1','limit'=>100,'offset'=>2]);
-getOne:
-    getOne requires the UUID of the record you are wanting to return. Unlink get, the response is just the record object and not a response object that you need to disassemble
-    ```php
-    $response = $folio->getOne('loan-types',{record UUID});
-    ```
-getAll:
-    getAll works similarly to get, but returns a single record at a time. Use this to loop over all of the records returned. You must provide the endpoint, the name of the array of objects returned (found in the documentation), and an array of parameters to pass to the endpoint. It is used something like this:
-    ```php
-    foreach($folio->getAll('instance-storage/instances','instances',['query'=>'cql.allRecords=1','limit'=>100]) as $instance){        
-        $count++;
-    }
-    ```
-getAll_by_id_offset:
-    getAll_by_id_offset uses the same structure as getAll. The difference is on the backend. getAll_by_id_offset grabs the next set of records in a different way than getAll. If you are working with larger data sets this can be substantially faster.
-
-## put
-Put is used to update a record. You will need to retrieve the record first, make what changes, and then put the record back. You will need the API endpoint, the UUID of the record you are changing, and the changed record. Only one record can be updated at a time. Put looks something like this:
-```php
-$folio->put('material-types',$materialTypeObject->id,$materialTypeObject)
-```
-## post
-Post is used to create a new record. You will need the API endpoint and the new record object. (See the documentation ). Post can only create one record at a time. Post looks something like this:
-```php
-$folio->post('material-types',$materialTypeObject)
+$client->post('/inventory/instances', $newInstanceData);
+$client->put('/inventory/instances', $instanceId, $updatedInstanceData);
+$client->patch('/inventory/instances', $instanceId, ['status' => 'active']);
+$client->delete('/inventory/instances', $instanceId);
 ```
 
-## delete
-Delete is used to delete a record or an entire set of records. Needless to say, this can be a dangerous command. At a minimum, delete just needs an endpoint, but it may without discrimination delete every record created with that endpoint. In almost every case you will want to pass the UUID of one object that you want to delete. Something like this:
-```php
-    $folio->delete('material-types',$id);
-```
-
-# Version 2
-
-### composer.json
-
-```json
-{
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/marnold-ebsco/phpfolioclient.git"
-        }
-    ],
-    "require": {
-        "marnold-ebsco/phpfolioclient": "^2.0.0"
-    }
-}
-```
-
-Then run:
-
-```bash
-composer require marnold-ebsco/phpfolioclient:^2.0.0
-```
-
-Version 2 uses the same ini as discussed above in version 1. The instructions for sslVerify are also the same.
-
-## Using the package
-### initialize the phpFolioClient class
-Setup depends on what classes you will be using. At a minimum you will need this:
+### Reference data
 
 ```php
-<?php
-require_once('vendor/autoload.php');
-
-use phpFolioClient\FolioConfig;
-use phpFolioClient\FolioAuth;
-use phpFolioClient\FolioLogger;
-use phpFolioClient\FolioClient;
-use phpFolioClient\FolioUtils;
-use phpFolioClient\FolioInformation;
 use phpFolioClient\FolioReferenceDataManager;
 
-$hostname = {hostname}; //this must match an existing .ini file
+$refData = new FolioReferenceDataManager($client);
 
-try{
-    $config = new FolioConfig($hostname . ".ini");
-    $utils = new FolioUtils();
-    $auth = new FolioAuth($config);
-    $logger = new FolioLogger('folioClientLog.txt');
-    $information = new FolioInformation($config,$auth);
-
-    $folio = new FolioClient($config,$auth,$utils,$logger);
-    
-    $refData = new FolioReferenceDataManager($folio);
-    $fileHandler = new FolioFileHandler($folio);
-
-}catch(Exception $e){
-    print "Error: " . $e->getMessage();
-    exit;
-}
-```
-If you want to use data export, you will need to use this:
-use phpFolioClient\FolioConfig;
-use phpFolioClient\FolioAuth;
-use phpFolioClient\FolioLogger;
-use phpFolioClient\FolioClient;
-use phpFolioClient\FolioDataExport;
-use phpFolioClient\FolioFileHandler;
-use phpFolioClient\FolioUtils;
-use phpFolioClient\FolioInformation;
-use phpFolioClient\FolioReferenceDataManager;
-
-## Running queries
-Put, Post, and Delete works the same as in version 1. Get has been substantially reworked however. There are now 5 different flavors of get:
-get: As in version 1, get can return the entire response object which must then be disassembled. It requires an extra parameter. The parameters to be passed are the API endpoint, the query (which has been separated out from the parameter array), an array of parameters to pass to the endpoint, and a constant that tells the class to return the full response object.
-```php
-$folio->get('locations','cql.allRecords=1',['limit'=>5],FolioClient::RETURN_FULL_OBJECT)
-```
-
-Without the RETURN_FULL_OBJECT constant, get return one record at a time. Note that for a large number of records this could be slow. Use getAll instead. It would be used something like this:
-```php
-foreach($folio->get('locations') as $value){
-    print_r($value);
-}
-```
-Note that the name of the array of objects returned does not need to be explicitly set. The class will attempt to derive that key from the data returned. A key can be explicitly set however:
-```php
-foreach($folio->get('locations','cql.allRecords=1',['limit'=>5],key: 'locations') as $value){
-    print_r($value);
+$locations = $refData->getLocations();       // materialized [id => name] array
+foreach ($refData->getLocationObjects() as $location) {  // Generator of full objects
+    // ...
 }
 ```
 
-getOne is called just as in v1. You need the endpoint and the UUID of the record to be retrieved
-$folio->getOne('locations',{uuid of record})
+### Data export
 
-getEach is an alias of get where every record is returned individually. It would be used like this:
 ```php
-foreach($folio->getEach('locations') as $value){
-    print_r($value);
-}
+use phpFolioClient\{FolioFileHandler, FolioDataExport};
+
+$fileHandler = new FolioFileHandler($client);
+$export      = new FolioDataExport($client, $fileHandler, verbose: false);
+
+// export a specific file of instance UUIDs (one per line)
+$export->dataExport('instance-ids.txt', 'Default instances export job profile', '/tmp/out');
+
+// export every record matching a job profile
+$export->dataExportAll('Default instances export job profile', '/tmp/out');
 ```
 
-getAll is functionally equivalent to getAll_by_id_offset in v1. It can be used for both small and large datasets. It is called like this:
-```php
-foreach($folio->getAll('instance-storage/instances','cql.allRecords=1',['limit'=>5000]) as $value){
-    $count++;
-}
+Both methods poll the export job until it reaches a terminal status and download the
+resulting file. A job that ends in `FAIL` status throws a clear `\Exception` rather than
+attempting the download. Pass `verbose: true` to the constructor to print step-by-step
+progress (including full response dumps) to stdout while an export runs.
+
+---
+
+## Class reference
+
+| Class | Purpose | Depends on |
+|---|---|---|
+| [`FolioConfig`](src/folio/FolioConfig.php) | Connection/credential settings, loaded from INI/array/object | — |
+| [`FolioUtils`](src/folio/FolioUtils.php) | UUID and JSON validation helpers | — |
+| [`FolioLogger`](src/folio/FolioLogger.php) | Tab-delimited query log, optional `error_log` mirroring | — |
+| [`FolioAuth`](src/folio/FolioAuth.php) | Login/token lifecycle (RTR), tracks access-token expiry | `FolioConfig` |
+| [`FolioInformation`](src/folio/FolioInformation.php) | Read-only tenant/environment metadata | `FolioConfig`, `FolioAuth` |
+| [`FolioClient`](src/folio/FolioClient.php) | Core HTTP client: GET/PUT/PATCH/POST/DELETE + pagination | `FolioConfig`, `FolioAuth`, `FolioUtils`, `FolioLogger`?, `FolioInformation`? |
+| [`FolioFileHandler`](src/folio/FolioFileHandler.php) | Binary file upload/download | `FolioClient` |
+| [`FolioDataExport`](src/folio/FolioDataExport.php) | Orchestrates the data-export workflow | `FolioClient`, `FolioFileHandler` |
+| [`FolioReferenceDataManager`](src/folio/FolioReferenceDataManager.php) | Reference/control-vocabulary lookups (locations, material types, patron groups, etc.) | `FolioClient` |
+
+Every class and public method below now has a full PHPDoc block (`@param`/`@return`/`@throws`)
+directly in its source file — see the individual `.php` files for exact signatures.
+
+---
+
+## Running tests
+
+Every class has a matching PHPUnit test in [`tests/`](tests). After `composer install`:
+
+```bash
+vendor/bin/phpunit
 ```
 
-getAll_loop is functionally equivalent to the old getAll. It should be used mainly for smaller datasets. It can be substantially slower than getAll. It is called like this:
-```php
-foreach($folio->getAll_loop('instance-storage/instances','cql.allRecords=1',['limit'=>5000]) as $value){
-    // print_r($value);
-    $count++;
-}
-```
-You can see examples of various queries by looking at the testRefactor.php file in the tests/ folder.  
+135 tests, ~6 seconds. Most tests use Guzzle's `MockHandler` to inject canned HTTP
+responses — no real network access is needed. Two spots build their own Guzzle client
+internally rather than accepting an injected one (`FolioAuth::refreshTokens()` and
+`FolioFileHandler::getFile()`), so their tests instead start a real local PHP built-in web
+server (`tests/Support/PhpServerTrait.php` + `tests/fixtures/mock_server_router.php`) on a
+random high port for the duration of the test class. `FolioDataExportTest`'s happy-path
+tests take slightly over a second each, since the polling loop in `dataExport()`/
+`dataExportAll()` always sleeps 1 real second per iteration — pre-existing production
+behavior, not a test artifact.
+
+| Test file | Covers |
+|---|---|
+| `FolioUtilsTest` | UUID/JSON validation edge cases |
+| `FolioConfigTest` | Construction from array/object/INI, required-key validation, `sslVerify` normalization, `__debugInfo()` redaction |
+| `FolioLoggerTest` | Append-mode file writing, timezone, `error_log` mirroring, destructor cleanup |
+| `FolioInformationTest` | Delegation to config/auth, hostname parsing edge cases |
+| `FolioAuthTest` | Login flow (success/failure paths) against the local server, token caching, `needsRefresh()` logic |
+| `FolioClientTest` | GET/pagination/CRUD methods, retry/backoff behavior, internal parameter/response-shape helpers |
+| `FolioFileHandlerTest` | Upload/download, header casing, file-handle cleanup |
+| `FolioDataExportTest` | Full export workflows end-to-end (through a real download from the local server), failure paths |
+| `FolioReferenceDataManagerTest` | Reference-data lookups, `getModules()`/`getCustomFieldObjects()` edge cases |
+
+## Known limitations
+
+See [ISSUES.md](ISSUES.md) for the full list. In short:
+
+- `sslVerify` should not be disabled in production; if you must (e.g. self-signed certs in a
+  dev environment), pass a real boolean or a CA-bundle file path — `FolioConfig` normalizes
+  common boolean-like strings (`"true"`/`"false"`/etc.) from any config source, but arbitrary
+  non-boolean strings are treated as a CA-bundle path, per Guzzle's own convention.
+- Logging is not redacted for PII in CQL query strings ([S4](ISSUES.md)) — treat log files as
+  sensitive.
+- `FolioConfig::$debug` has no effect on this library's own behavior (see [D2](ISSUES.md#d2))
+  — it's available for application code to read for its own purposes only. Use
+  `FolioLogger`'s `$debug` constructor parameter to control `error_log()` mirroring instead.
+- `FolioClient::rawRequest()` is a public low-level escape hatch used internally by
+  `FolioFileHandler` and `FolioReferenceDataManager`; general application code should prefer
+  the CRUD methods (`get`/`put`/`patch`/`post`/`delete`) instead.

@@ -1,118 +1,81 @@
 <?php declare(strict_types=1);
-
 namespace phpFolioClient\Tests;
 
-use PHPUnit\Framework\TestCase;
-use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\Attributes\DataProvider;
 use phpFolioClient\FolioUtils;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\TestCase;
 
-
-#[AllowMockObjectsWithoutExpectations]
-class FolioUtilsTest extends TestCase {
-    private FolioUtils $folioUtils;
+final class FolioUtilsTest extends TestCase {
+    private FolioUtils $utils;
 
     protected function setUp(): void {
-        $this->folioUtils = new FolioUtils();
+        $this->utils = new FolioUtils();
     }
 
-    #[Test]
-    public function testIsValidUuidWithValidUuid(): void {
-        $validUuid = '550e8400-e29b-41d4-a716-446655440000';
-        $this->assertTrue($this->folioUtils->isValidUuid($validUuid));
+    public function testIsValidUuidAcceptsV4(): void {
+        $this->assertTrue($this->utils->isValidUuid('e4a1c3d0-1234-4abc-89ab-1234567890ab'));
     }
 
-    #[Test]
-    public function testIsValidUuidWithValidVersion5Uuid(): void {
-        $validUuid = '550e8400-e29b-51d4-a716-446655440000';
-        $this->assertTrue($this->folioUtils->isValidUuid($validUuid));
+    public function testIsValidUuidAcceptsV5(): void {
+        $this->assertTrue($this->utils->isValidUuid('e4a1c3d0-1234-5abc-9abc-1234567890ab'));
     }
 
-    #[Test]
-    public function testIsValidUuidWithInvalidFormat(): void {
-        $invalidUuid = 'not-a-uuid';
-        $this->assertFalse($this->folioUtils->isValidUuid($invalidUuid));
+    /**
+     * B26: deliberately kept strict — a well-formed v1 UUID is rejected
+     * because this validator is FOLIO-specific (v4/v5 only), not general-purpose.
+     */
+    public function testIsValidUuidRejectsV1(): void {
+        $this->assertFalse($this->utils->isValidUuid('e4a1c3d0-1234-1abc-89ab-1234567890ab'));
     }
 
-    #[Test]
-    public function testIsValidUuidWithInvalidVersion(): void {
-        $invalidUuid = '550e8400-e29b-31d4-a716-446655440000';
-        $this->assertFalse($this->folioUtils->isValidUuid($invalidUuid));
+    public function testIsValidUuidRejectsWrongVariantNibble(): void {
+        // Variant nibble must be 8/9/a/b; 'c' is out of range for this check.
+        $this->assertFalse($this->utils->isValidUuid('e4a1c3d0-1234-4abc-cabc-1234567890ab'));
     }
 
-    #[Test]
-    public function testIsValidUuidWithInvalidVariant(): void {
-        $invalidUuid = '550e8400-e29b-41d4-c716-446655440000';
-        $this->assertFalse($this->folioUtils->isValidUuid($invalidUuid));
+    public function testIsValidUuidRejectsMalformedString(): void {
+        $this->assertFalse($this->utils->isValidUuid('not-a-uuid'));
     }
 
-    #[Test]
-    public function testIsValidUuidWithEmptyString(): void {
-        $this->assertFalse($this->folioUtils->isValidUuid(''));
+    public function testIsValidUuidRejectsEmptyString(): void {
+        $this->assertFalse($this->utils->isValidUuid(''));
     }
 
-    #[Test]
-    public function testIsValidUuidWithUppercaseCharacters(): void {
-        $invalidUuid = '550E8400-E29B-41D4-A716-446655440000';
-        $this->assertFalse($this->folioUtils->isValidUuid($invalidUuid));
+    public function testIsJsonAcceptsObjectString(): void {
+        $this->assertTrue($this->utils->isJson('{"a":1}'));
     }
 
-    #[Test]
-    public function testIsJsonWithValidJson(): void {
-        $validJson = '{"key":"value"}';
-        $this->assertTrue($this->folioUtils->isJson($validJson));
+    public function testIsJsonAcceptsArrayString(): void {
+        $this->assertTrue($this->utils->isJson('[1,2,3]'));
     }
 
-    #[Test]
-    public function testIsJsonWithValidJsonArray(): void {
-        $validJson = '[1,2,3]';
-        $this->assertTrue($this->folioUtils->isJson($validJson));
+    /**
+     * B27: "0" is falsy as a PHP string but is valid JSON (decodes to int 0).
+     */
+    public function testIsJsonAcceptsTheStringZero(): void {
+        $this->assertTrue($this->utils->isJson('0'));
     }
 
-    #[Test]
-    public function testIsJsonWithValidJsonBoolean(): void {
-        $validJson = 'true';
-        $this->assertTrue($this->folioUtils->isJson($validJson));
+    public function testIsJsonAcceptsLiteralFalse(): void {
+        $this->assertTrue($this->utils->isJson('false'));
     }
 
-    #[Test]
-    public function testIsJsonWithValidJsonNumber(): void {
-        $validJson = '42';
-        $this->assertTrue($this->folioUtils->isJson($validJson));
+    public function testIsJsonAcceptsLiteralNull(): void {
+        $this->assertTrue($this->utils->isJson('null'));
     }
 
-    #[Test]
-    public function testIsJsonWithValidJsonNull(): void {
-        $validJson = 'null';
-        $this->assertTrue($this->folioUtils->isJson($validJson));
+    public function testIsJsonRejectsEmptyString(): void {
+        $this->assertFalse($this->utils->isJson(''));
     }
 
-    #[Test]
-    public function testIsJsonWithInvalidJson(): void {
-        $invalidJson = '{key:value}';
-        $this->assertFalse($this->folioUtils->isJson($invalidJson));
+    public function testIsJsonRejectsNull(): void {
+        $this->assertFalse($this->utils->isJson(null));
     }
 
-    #[Test]
-    public function testIsJsonWithMalformedJson(): void {
-        $malformedJson = '{"key":"value"';
-        $this->assertFalse($this->folioUtils->isJson($malformedJson));
+    public function testIsJsonRejectsMalformedJson(): void {
+        $this->assertFalse($this->utils->isJson('{not valid json'));
     }
 
-    #[Test]
-    public function testIsJsonWithEmptyString(): void {
-        $this->assertFalse($this->folioUtils->isJson(''));
-    }
-
-    #[Test]
-    public function testIsJsonWithNull(): void {
-        $this->assertFalse($this->folioUtils->isJson(null));
-    }
-
-    #[Test]
-    public function testIsJsonWithPlainText(): void {
-        $plainText = 'just plain text';
-        $this->assertFalse($this->folioUtils->isJson($plainText));
+    public function testIsJsonRejectsPlainWord(): void {
+        $this->assertFalse($this->utils->isJson('hello'));
     }
 }

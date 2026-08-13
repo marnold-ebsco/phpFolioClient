@@ -1,3 +1,5 @@
+/vendor/
+/.phpunit.cache/
 vendor/
 folioClientLog.txt
 testClient.txt

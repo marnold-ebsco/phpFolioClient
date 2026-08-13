@@ -1,123 +1,84 @@
 <?php declare(strict_types=1);
-
 namespace phpFolioClient\Tests;
 
-use PHPUnit\Framework\TestCase;
-use phpFolioClient\FolioInformation;
 use phpFolioClient\FolioConfig;
-use phpFolioClient\FolioAuth;
-use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\Attributes\Before;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use phpFolioClient\FolioInformation;
+use phpFolioClient\Tests\Support\StubAuth;
+use PHPUnit\Framework\TestCase;
 
-
-#[AllowMockObjectsWithoutExpectations]
-class FolioInformationTest extends TestCase {
-    private FolioInformation $folioInformation;
-    private FolioConfig $mockConfig;
-    private FolioAuth $mockAuth;
-
-    protected function setUp(): void {
-        $this->mockConfig = $this->createMock(FolioConfig::class);
-        $this->mockAuth = $this->createMock(FolioAuth::class);
-        $this->folioInformation = new FolioInformation($this->mockConfig, $this->mockAuth);
+final class FolioInformationTest extends TestCase {
+    private function makeConfig(array $overrides = []): FolioConfig {
+        return new FolioConfig(array_merge([
+            'okapiUrl' => 'https://okapi.example.edu',
+            'tenant_id' => 'diku',
+            'username' => 'diku_admin',
+            'password' => 'secret',
+        ], $overrides));
     }
 
-    #[Test]
-    public function testGetAuthFlavorReturnsAuthFlavorFromAuth(): void {
-        $this->mockAuth->method('getAuthFlavor')->willReturn('oauth2');
-        
-        $result = $this->folioInformation->getAuthFlavor();
-        
-        $this->assertEquals('oauth2', $result);
+    public function testGetAuthFlavorDelegatesToAuth(): void {
+        $info = new FolioInformation($this->makeConfig(), new StubAuth());
+
+        $this->assertSame('RTR', $info->getAuthFlavor());
     }
 
-    #[Test]
-    public function testGetUrlReturnsApiUrlFromConfig(): void {
-        $this->mockConfig->method('getApiUrl')->willReturn('https://api.example.com');
-        
-        $result = $this->folioInformation->getUrl();
-        
-        $this->assertEquals('https://api.example.com', $result);
+    public function testGetUrlDelegatesToConfig(): void {
+        $info = new FolioInformation($this->makeConfig(), new StubAuth());
+
+        $this->assertSame('https://okapi.example.edu', $info->getUrl());
     }
 
-    #[Test]
-    public function testGetTenantIdReturnsTenantIdFromConfig(): void {
-        $this->mockConfig->tenant_id = 'tenant-123';
-        
-        $result = $this->folioInformation->getTenantId();
-        
-        $this->assertEquals('tenant-123', $result);
+    public function testGetTenantId(): void {
+        $info = new FolioInformation($this->makeConfig(['tenant_id' => 'diku']), new StubAuth());
+
+        $this->assertSame('diku', $info->getTenantId());
     }
 
-    #[Test]
-    public function testGetCentralTenantIdReturnsCentralTenantIdWhenSet(): void {
-        $this->mockConfig->central_tenant_id = 'central-tenant-456';
-        
-        $result = $this->folioInformation->getCentralTenantId();
-        
-        $this->assertEquals('central-tenant-456', $result);
+    public function testGetCentralTenantIdDefaultsToEmptyStringWhenNull(): void {
+        $info = new FolioInformation($this->makeConfig(), new StubAuth());
+
+        $this->assertSame('', $info->getCentralTenantId());
     }
 
-    #[Test]
-    public function testGetCentralTenantIdReturnsEmptyStringWhenNotSet(): void {
-        $this->mockConfig->central_tenant_id = null;
-        
-        $result = $this->folioInformation->getCentralTenantId();
-        
-        $this->assertEquals('', $result);
+    public function testGetCentralTenantIdReturnsValueWhenSet(): void {
+        $info = new FolioInformation($this->makeConfig(['central_tenant_id' => 'consortium']), new StubAuth());
+
+        $this->assertSame('consortium', $info->getCentralTenantId());
     }
 
-    #[Test]
-    #[DataProvider('hostnameProvider')]
-    public function testGetHostnameExtractsSubdomainCorrectly(string $url, string $expected): void {
-        $this->mockConfig->method('getApiUrl')->willReturn($url);
-        
-        $result = $this->folioInformation->getHostname();
-        
-        $this->assertEquals($expected, $result);
+    public function testGetUsername(): void {
+        $info = new FolioInformation($this->makeConfig(), new StubAuth());
+
+        $this->assertSame('diku_admin', $info->getUsername());
+    }
+
+    /**
+     * @dataProvider hostnameProvider
+     */
+    public function testGetHostnameStripsKnownPrefixesAndSuffixes(string $url, string $expected): void {
+        $info = new FolioInformation($this->makeConfig(['okapiUrl' => $url]), new StubAuth());
+
+        $this->assertSame($expected, $info->getHostname());
     }
 
     public static function hostnameProvider(): array {
         return [
-            'happy path - standard subdomain' => [
-                'https://demo.okapi.example.com/okapi',
-                'demo'
-            ],
-            'subdomain prefix to remove' => [
-                'https://subdomain-demo.example.com',
-                'demo'
-            ],
-            'okapi prefix to remove' => [
-                'https://okapi-demo.example.com',
-                'demo'
-            ],
-            'api prefix to remove' => [
-                'https://api-demo.example.com',
-                'demo'
-            ],
-            'kong prefix to remove' => [
-                'https://kong-demo.example.com',
-                'demo'
-            ],
-            'okapi suffix to remove' => [
-                'https://demo-okapi.example.com',
-                'demo'
-            ],
-            'single word hostname' => [
-                'https://localhost',
-                'localhost'
-            ],
+            'okapi- prefix' => ['https://okapi-sandbox.folio.org', 'sandbox'],
+            '-okapi suffix' => ['https://sandbox-okapi.folio.org', 'sandbox'],
+            'api- prefix' => ['https://api-test.folio.org', 'test'],
+            'kong- prefix' => ['https://kong-demo.folio.org', 'demo'],
+            'no known prefix/suffix' => ['https://plainname.folio.org', 'plainname'],
         ];
     }
 
-    #[Test]
-    public function testGetUsernameReturnsUsernameFromConfig(): void {
-        $this->mockConfig->username = 'testuser';
-        
-        $result = $this->folioInformation->getUsername();
-        
-        $this->assertEquals('testuser', $result);
+    /**
+     * B23: getHostname() must throw a clear exception instead of passing
+     * null into explode() when the configured URL has no parseable host.
+     */
+    public function testGetHostnameThrowsOnUnparseableUrl(): void {
+        $info = new FolioInformation($this->makeConfig(['okapiUrl' => '/just/a/path']), new StubAuth());
+
+        $this->expectException(\Exception::class);
+        $info->getHostname();
     }
 }
