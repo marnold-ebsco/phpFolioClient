@@ -164,131 +164,194 @@ try{
     print "Elapsed time: " . number_format((microtime(true) - $areaBegin),2) . " seconds.\n\n";
 }
 
-$areaBegin=microtime(true);
-print "POST\n";
-$location = new stdClass();
-$location->name = 'Test location';
-$location->code = 'Test0';
-$location->discoveryDisplayName = $location->name;
-$location->isActive = true;
-$location->institutionId = "ba7fc3fe-1c7a-433e-a4cd-37ba26c1d36c"; // Generic State University
-$location->campusId = "4f476eb0-af07-4483-bf96-a8fa19226915"; // Lorem campus
-$location->libraryId = "ee532760-20af-487b-8272-b4b067498e41"; // Lorem library
-$location->primaryServicePoint = "32489163-1292-44fc-95b0-6caf81c391dd";
-$location->servicePointIds = ["32489163-1292-44fc-95b0-6caf81c391dd"];
-$response= $folio->post('locations',$location);
-$id = $response->id;
-print "id: $id\n";
-print "status: " . $folio->getLastStatusCode() . PHP_EOL;
-print "Elapsed time: " . number_format((microtime(true) - $areaBegin),2) . " seconds.\n\n";
-
-$areaBegin=microtime(true);
-print "GET\n";
-$folio->get('locations',"id==$id");
-print "status: " . $folio->getLastStatusCode() . PHP_EOL;
-print "Elapsed time: " . number_format((microtime(true) - $areaBegin),2) . " seconds.\n\n";
-
-
-$areaBegin=microtime(true);
-print "DELETE\n";
-$folio->delete('locations',$id);
-print "status: " . $folio->getLastStatusCode() . PHP_EOL;
-print "Elapsed time: " . number_format((microtime(true) - $areaBegin),2) . " seconds.\n\n";
-
-
-//
-print"PUT\n";
-$count = 0;
-$areaBegin=microtime(true);
-// original name: Lorem Circulation Holding Shelf (Staff Area)
-$location = $folio->getOne('locations','094cf617-8114-457c-a4f9-7b9a546d6344');
-$location->name = 'Lorem Circulation Holding Shelf (Staff Area)';
-unset($location->metadata);
-$folio->put('locations','094cf617-8114-457c-a4f9-7b9a546d6344',$location);
-print "status: " . $folio->getLastStatusCode() . PHP_EOL;
-
-$finalLocation = $folio->getOne('locations','094cf617-8114-457c-a4f9-7b9a546d6344');
-unset($finalLocation->metadata);
-print ($location == $finalLocation) ? "PUT succeeded\n" : "PUT failed\n";
-print "Elapsed time: " . number_format((microtime(true) - $areaBegin),2) . " seconds.\n\n";
-
-print"GET ALL empty\n";
-$count = 0;
-$areaBegin=microtime(true);
-foreach($folio->getAll('instance-storage/instances','statisticalCodeIds="8028ab79-5a16-44eb-b48c-da94f60c8149"',['limit'=>5000]) as $value){
-    // print_r($value);
-    $count++;
+try{
+    $areaBegin=microtime(true);
+    print "POST Create location\n";
+    $location = new stdClass();
+    $location->name = 'Test location';
+    $location->code = 'Test0';
+    $location->discoveryDisplayName = $location->name;
+    $location->isActive = true;
+    $location->institutionId = "ba7fc3fe-1c7a-433e-a4cd-37ba26c1d36c"; // Generic State University
+    $location->campusId = "4f476eb0-af07-4483-bf96-a8fa19226915"; // Lorem campus
+    $location->libraryId = "ee532760-20af-487b-8272-b4b067498e41"; // Lorem library
+    $location->primaryServicePoint = "32489163-1292-44fc-95b0-6caf81c391dd";
+    $location->servicePointIds = ["32489163-1292-44fc-95b0-6caf81c391dd"];
+    $response= $folio->post('locations',$location);
+    $id = $response->id;
+    print "id: $id\n";
+    print "status: " . $folio->getLastStatusCode() . PHP_EOL;
+}catch(Exception $e){
+    print "  Exception: " . $e->getMessage() . PHP_EOL;
+}finally{
+    print "Elapsed time: " . number_format((microtime(true) - $areaBegin),2) . " seconds.\n\n";
 }
-print "count: $count\n";
-print "Elapsed time: " . number_format((microtime(true) - $areaBegin),2) . " seconds.\n\n";
 
-print"GET ALL\n";
-$count = 0;
-$areaBegin=microtime(true);
-foreach($folio->getAll('instance-storage/instances',null,['limit'=>5000]) as $value){
-    // print_r($value);
-    $count++;
+try{
+    $areaBegin=microtime(true);
+    print "GET\n";
+    $folio->get('locations',"id==$id");
+    print "status: " . $folio->getLastStatusCode() . PHP_EOL;
+}catch(Exception $e){
+    print "  Exception: " . $e->getMessage() . PHP_EOL;
+}finally{
+    print "Elapsed time: " . number_format((microtime(true) - $areaBegin),2) . " seconds.\n\n";
 }
-print "count: $count\n";
-print "Elapsed time: " . number_format((microtime(true) - $areaBegin),2) . " seconds.\n\n";
 
-print"GET ALL with loop\n";
-$count = 0;
-$areaBegin=microtime(true);
-foreach($folio->getAll_loop('instance-storage/instances',null,['limit'=>5000]) as $value){
-    // print_r($value);
-    $count++;
+try{
+    $areaBegin=microtime(true);
+    print "DELETE\n";
+    $folio->delete('locations',$id);
+    print "status: " . $folio->getLastStatusCode() . PHP_EOL;
+}catch(Exception $e){
+    print "  Exception: " . $e->getMessage() . PHP_EOL;
+}finally{
+    print "Elapsed time: " . number_format((microtime(true) - $areaBegin),2) . " seconds.\n\n";
 }
-print "count: $count\n";
-print "Elapsed time: " . number_format((microtime(true) - $areaBegin),2) . " seconds.\n\n";
 
+try{
+    print"PUT\n";
+    $count = 0;
+    $areaBegin=microtime(true);
+    // original name: Lorem Circulation Holding Shelf (Staff Area)
+    $location = $folio->getOne('locations','094cf617-8114-457c-a4f9-7b9a546d6344');
+    $location->name = 'Lorem Circulation Holding Shelf (Staff Area)';
+    unset($location->metadata);
+    $folio->put('locations','094cf617-8114-457c-a4f9-7b9a546d6344',$location);
+    print "status: " . $folio->getLastStatusCode() . PHP_EOL;
 
-$count = 0;
-$areaBegin=microtime(true);
-print"GET with implicit key\n";
-foreach($folio->get('instance-storage/instances') as $value){
-    // print_r($value);
-    $count++;
+    $finalLocation = $folio->getOne('locations','094cf617-8114-457c-a4f9-7b9a546d6344');
+    unset($finalLocation->metadata);
+    print ($location == $finalLocation) ? "PUT succeeded\n" : "PUT failed\n";
+}catch(Exception $e){
+    print "  Exception: " . $e->getMessage() . PHP_EOL;
+}finally{
+    print "Elapsed time: " . number_format((microtime(true) - $areaBegin),2) . " seconds.\n\n";
 }
-print "count: $count\n";
-print "Elapsed time: " . number_format((microtime(true) - $areaBegin),2) . " seconds.\n\n";
 
-
-$areaBegin=microtime(true);
-print"GET Full Object\n";
-// print_r($folio->get('locations',null,['limit'=>5],FolioClient::RETURN_FULL_OBJECT));
-print "Elapsed time: " . number_format((microtime(true) - $areaBegin),2) . " seconds.\n\n";
-
-$areaBegin=microtime(true);
-print"GET with implicit key\n";
-foreach($folio->get('locations') as $value){
-    // print_r($value);
+try{
+    print"GET ALL empty\n";
+    $count = 0;
+    $areaBegin=microtime(true);
+    foreach($folio->getAll('instance-storage/instances','statisticalCodeIds="8028ab79-5a16-44eb-b48c-da94f60c8149"',['limit'=>5000]) as $value){
+        $count++;
+    }
+    print "count: $count\n";
+}catch(Exception $e){
+    print "  Exception: " . $e->getMessage() . PHP_EOL;
+}finally{
+    print "Elapsed time: " . number_format((microtime(true) - $areaBegin),2) . " seconds.\n\n";
 }
-print "Elapsed time: " . number_format((microtime(true) - $areaBegin),2) . " seconds.\n\n";
 
-
-$areaBegin=microtime(true);
-print"GET with explicit key\n";
-foreach($folio->get('locations',null,['limit'=>5],key: 'locations') as $value){
-    // print_r($value);
+try{
+    print"GET ALL\n";
+    $count = 0;
+    $areaBegin=microtime(true);
+    foreach($folio->getAll('instance-storage/instances',null,['limit'=>5000]) as $value){
+        $count++;
+    }
+    print "count: $count\n";
+}catch(Exception $e){
+    print "  Exception: " . $e->getMessage() . PHP_EOL;
+}finally{
+    print "Elapsed time: " . number_format((microtime(true) - $areaBegin),2) . " seconds.\n\n";
 }
-print "Elapsed time: " . number_format((microtime(true) - $areaBegin),2) . " seconds.\n\n";
 
-$areaBegin=microtime(true);
-print"GET One\n";
-// print_r($folio->getOne('locations','094cf617-8114-457c-a4f9-7b9a546d6344'));
-print "Elapsed time: " . number_format((microtime(true) - $areaBegin),2) . " seconds.\n\n";
-
-$areaBegin=microtime(true);
-print"GETEACH\n";
-$count= 0;
-foreach($folio->getEach('locations',null,['limit'=>10],'locations') as $value){
-    print "Count $count\r";
-    // print_r($value);
-    $count++;
+try{
+    print"GET ALL with loop\n";
+    $count = 0;
+    $areaBegin=microtime(true);
+    foreach($folio->getAll_loop('instance-storage/instances',null,['limit'=>5000]) as $value){
+        $count++;
+    }
+    print "count: $count\n";
+}catch(Exception $e){
+    print "  Exception: " . $e->getMessage() . PHP_EOL;
+}finally{
+    print "Elapsed time: " . number_format((microtime(true) - $areaBegin),2) . " seconds.\n\n";
 }
-print "Elapsed time: " . number_format((microtime(true) - $areaBegin),2) . " seconds.\n\n";
 
+try{
+    $count = 0;
+    $areaBegin=microtime(true);
+    print"GET with implicit key\n";
+    foreach($folio->get('instance-storage/instances') as $value){
+        $count++;
+    }
+    print "count: $count\n";
+}catch(Exception $e){
+    print "  Exception: " . $e->getMessage() . PHP_EOL;
+}finally{
+    print "Elapsed time: " . number_format((microtime(true) - $areaBegin),2) . " seconds.\n\n";
+}
+
+try{
+$areaBegin=microtime(true);
+    print"GET Full Object\n";
+    $loc = $folio->get('locations',null,['limit'=>5],FolioClient::RETURN_FULL_OBJECT);
+    print "Count: " . count($loc->locations) . PHP_EOL;
+}catch(Exception $e){
+    print "  Exception: " . $e->getMessage() . PHP_EOL;
+}finally{
+    print "Elapsed time: " . number_format((microtime(true) - $areaBegin),2) . " seconds.\n\n";
+}
+
+try{
+    $areaBegin=microtime(true);
+    print"GET with implicit key\n";
+    $count = 0;
+    foreach($folio->get('locations') as $value){
+        $count++;
+    }
+    print "Count: $count\n";
+}catch(Exception $e){
+    print "  Exception: " . $e->getMessage() . PHP_EOL;
+}finally{
+    print "Elapsed time: " . number_format((microtime(true) - $areaBegin),2) . " seconds.\n\n";
+}
+
+try{
+    $areaBegin=microtime(true);
+    print"GET with explicit key\n";
+    $count = 0;
+    foreach($folio->get('locations',null,['limit'=>5],key: 'locations') as $value){
+        $count++;
+    }
+    print "Count: $count\n";
+}catch(Exception $e){
+    print "  Exception: " . $e->getMessage() . PHP_EOL;
+}finally{
+    print "Elapsed time: " . number_format((microtime(true) - $areaBegin),2) . " seconds.\n\n";
+}
+
+try{
+    $areaBegin=microtime(true);
+    print"GET One\n";
+    $loc = $folio->getOne('locations','094cf617-8114-457c-a4f9-7b9a546d6344');
+    if(isset($loc->locations)){
+        print "Count: " . count($loc->locations) . PHP_EOL;
+    }else{
+        print "No locations defined\n";
+    }
+}catch(Exception $e){
+    print "  Exception: " . $e->getMessage() . PHP_EOL;
+}finally{
+    print "Elapsed time: " . number_format((microtime(true) - $areaBegin),2) . " seconds.\n\n";
+}
+
+try{
+    $areaBegin=microtime(true);
+    print"GETEACH\n";
+    $count= 0;
+    foreach($folio->getEach('locations',null,['limit'=>10],'locations') as $value){
+        print "Count $count\r";
+        $count++;
+    }
+}catch(Exception $e){
+    print "  Exception: " . $e->getMessage() . PHP_EOL;
+}finally{
+    print "Elapsed time: " . number_format((microtime(true) - $areaBegin),2) . " seconds.\n\n";
+}
 
 
 print "Script elapsed time: " . number_format((microtime(true) - $scriptBegin),2) . " seconds.\n";
