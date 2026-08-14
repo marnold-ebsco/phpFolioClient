@@ -50,17 +50,31 @@ library that need it; general application code should stick to `get()`/`getOne()
 ---
 
 ## Setup
+To deploy, copy the `composer.json` file (or create a new one) to the root of your working directory for version 1
 
-This directory has its own [composer.json](composer.json) (requiring `guzzlehttp/guzzle`,
-plus `phpunit/phpunit` as a dev dependency for the test suite). From this directory:
-
-```bash
-composer install
+```json
+{
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/marnold-ebsco/phpfolioclient.git"
+        }
+    ],
+    "require": {
+        "marnold-ebsco/phpfolioclient": "^2.0.0"
+    }
+}
 ```
 
-This sets up PSR-4 autoloading for the `phpFolioClient` namespace automatically. If you'd
-rather integrate this library into an existing Composer project instead, copy the
-`require` entry from `composer.json` and point your own PSR-4 autoload mapping at this directory.
+```bash
+composer require marnold-ebsco/phpfolioclient:^2.0.0
+```
+
+Use this for verson 2:
+
+Then run:
+
+
 
 ### Configuration
 
@@ -247,3 +261,24 @@ See [ISSUES.md](ISSUES.md) for the full list. In short:
 - `FolioClient::rawRequest()` is a public low-level escape hatch used internally by
   `FolioFileHandler` and `FolioReferenceDataManager`; general application code should prefer
   the CRUD methods (`get`/`put`/`patch`/`post`/`delete`) instead.
+
+## Setup for old version 1
+To deploy, copy the `composer.json` file (or create a new one) to the root of your working directory for version 1
+
+```json
+{
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/marnold-ebsco/phpfolioclient.git"
+        }
+    ],
+    "require": {
+        "marnold-ebsco/phpfolioclient": "^0.9.0"
+    }
+}
+```
+
+```bash
+composer require marnold-ebsco/phpfolioclient:^0.9.0
+```
