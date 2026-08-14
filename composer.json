@@ -1,5 +1,5 @@
 {
-    "name": "ebsco/phpfolioclient",
+    "name": "marnold-ebsco/phpfolioclient",
     "description": "PHP client library for the FOLIO library services platform API.",
     "type": "library",
     "require": {
