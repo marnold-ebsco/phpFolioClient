@@ -421,7 +421,7 @@ final class FolioClientTest extends TestCase {
         $method = new \ReflectionMethod($client, '_handleParameters');
 
         $id = 'e4a1c3d0-1234-4abc-89ab-1234567890ab';
-        $result = $method->invoke($client, 'GET', $id, null);
+        $result = $method->invoke($client, '/inventory/instances', 'GET', $id, null);
 
         $this->assertSame('id="' . $id . '" sortBy id', $result['query']);
     }
@@ -430,7 +430,7 @@ final class FolioClientTest extends TestCase {
         $client = $this->buildClient([]);
         $method = new \ReflectionMethod($client, '_handleParameters');
 
-        $result = $method->invoke($client, 'GET', '{"limit":10}', null);
+        $result = $method->invoke($client, '/inventory/instances', 'GET', '{"limit":10}', null);
 
         $this->assertSame(10, $result['limit']);
     }
@@ -439,8 +439,50 @@ final class FolioClientTest extends TestCase {
         $client = $this->buildClient([]);
         $method = new \ReflectionMethod($client, '_handleParameters');
 
-        $result = $method->invoke($client, 'GET', ['query' => 'ignored'], 'title="foo"');
+        $result = $method->invoke($client, '/inventory/instances', 'GET', null, '');
+
+        $this->assertSame('', $result['query']);
+    }
+
+    /**
+     * The explicit $query override must apply to every endpoint, not just
+     * the ones that get GET-specific defaults (e.g. instance-storage).
+     */
+    public function testHandleParametersExplicitQueryOverridesParamsQueryOnAnyEndpoint(): void {
+        $client = $this->buildClient([]);
+        $method = new \ReflectionMethod($client, '_handleParameters');
+
+        $result = $method->invoke($client, '/inventory/instances', 'GET', ['query' => 'ignored'], 'title="foo"');
 
         $this->assertSame('title="foo"', $result['query']);
+    }
+
+    /**
+     * GET requests must always carry a 'query' key, even when neither
+     * $params nor $query supply one, so callers can rely on it existing.
+     * With no endpoint currently exempt from defaults, the key is filled
+     * by the GET default query rather than the '' fallback.
+     */
+    public function testHandleParametersGetRequestAlwaysHasQueryKey(): void {
+        $client = $this->buildClient([]);
+        $method = new \ReflectionMethod($client, '_handleParameters');
+
+        $result = $method->invoke($client, '/inventory/instances', 'GET', [], null);
+
+        $this->assertArrayHasKey('query', $result);
+        $this->assertSame('cql.allRecords=1 sortBy id', $result['query']);
+    }
+
+    /**
+     * Non-GET requests should omit the 'query' key entirely when there's
+     * nothing to send, rather than sending an empty query parameter.
+     */
+    public function testHandleParametersNonGetRequestOmitsEmptyQueryKey(): void {
+        $client = $this->buildClient([]);
+        $method = new \ReflectionMethod($client, '_handleParameters');
+
+        $result = $method->invoke($client, '/inventory/instances', 'DELETE', [], null);
+
+        $this->assertArrayNotHasKey('query', $result);
     }
 }

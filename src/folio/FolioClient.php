@@ -522,7 +522,7 @@ class FolioClient {
         $method = strtoupper($method);
         $uri = trim($endpoint, "/ \t\r\n\0");
 
-        $handledParams = $this->_handleParameters($method, $params, $query);
+        $handledParams = $this->_handleParameters($endpoint,$method, $params, $query);
         $queryString = !empty($handledParams) ? '?' . http_build_query($handledParams) : '';
 
         // Merge headers with defaults
@@ -692,21 +692,25 @@ class FolioClient {
      *
      * Accepts an array, object (cast to array), or string (parsed as
      * JSON, or as a UUID-based `id=` query if it looks like a UUID) and
-     * normalizes it to an array. For `GET` requests, fills in default
-     * `limit`/`offset`/`query` values when not already present. The
-     * explicit `$query` argument, when given, always overrides any
-     * implicit `query` key.
+     * normalizes it to an array. For `GET` requests against endpoints in
+     * the internal defaults list, fills in default `limit`/`offset`/`query`
+     * values when not already present. The explicit `$query` argument, when
+     * given, always overrides any implicit `query` key, for every endpoint.
      *
+     * @param $endpoint  API endpoint to call.
      * @param $method Currently-executing HTTP method (used to decide
-     *                whether to apply GET-specific defaults).
+     *                whether to apply GET-specific defaults, and whether a
+     *                `query` key is guaranteed in the result).
      * @param $params Caller-supplied parameters in array, object, string
      *                (JSON or bare UUID), or null form; anything else
      *                normalizes to an empty array.
      * @param $query  Explicit CQL query string to use, or null.
-     * @return The normalized parameter array, with a `query` key removed
-     *         entirely if it would otherwise be empty.
+     * @return The normalized parameter array. For `GET` requests, always
+     *         includes a `query` key (defaulting to `''` if none was
+     *         implicit or explicit). For other methods, the `query` key is
+     *         removed entirely if it would otherwise be empty.
      */
-    private function _handleParameters(string $method, mixed $params, ?string $query = null): array {
+    private function _handleParameters(string $endpoint, string $method, mixed $params, ?string $query = null): array {
         $paramArray = match (gettype($params)) {
             'object' => (array) $params,
             'array' => $params,
@@ -715,8 +719,9 @@ class FolioClient {
             default => [],
         };
 
-        // set defaults
-        if($method == 'GET'){
+        //only set defaults for these endpoints. Not all endpoints accept these keys
+        $noDefaultEndpoint = [];
+        if ($method == 'GET' && !in_array($endpoint, $noDefaultEndpoint)) {
             $paramArray['limit'] = ($paramArray['limit'] ?? 0) > 0 ? $paramArray['limit'] : $this->getAllDefaultLimit;
             $paramArray['offset'] = $paramArray['offset'] ?? 0;
             $paramArray['query'] = ($paramArray['query'] ?? 'cql.allRecords=1') . ' sortBy id';
@@ -724,13 +729,19 @@ class FolioClient {
 
         // if query is explicitly set, override implicit; otherwise leave
         // whatever implicit query was derived above (from $params, or the
-        // GET-default 'cql.allRecords=1') alone.
+        // GET-default 'cql.allRecords=1') alone. Applies to every endpoint.
         if ($query !== null) {
             $paramArray['query'] = $query;
         }
-        if (empty($paramArray['query'] ?? null)) {
+
+        // GET/search requests must always carry a query key, even if empty;
+        // other methods omit it entirely when there's nothing to send.
+        if ($method == 'GET') {
+            $paramArray['query'] = $paramArray['query'] ?? '';
+        } elseif (empty($paramArray['query'] ?? null)) {
             unset($paramArray['query']);
         }
+
         return $paramArray;
     }
 
