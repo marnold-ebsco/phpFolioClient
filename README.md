@@ -45,7 +45,7 @@ FolioClient(config, auth, folioUtils, logger?, information?, httpClient?)
 (a thin public wrapper around the private `_request()`) rather than going through
 `get()`/`post()`/etc. — this is the sanctioned low-level entry point for classes in this
 library that need it; general application code should stick to `get()`/`getOne()`/`getAll()`/
-`getAll_loop()`/`getEach()`/`put()`/`patch()`/`post()`/`delete()`.
+`getAll_loop()`/`getEach()`/`put()`/`patch()`/`post()`/`upsert()`/`delete()`.
 
 ---
 
@@ -161,6 +161,22 @@ $client->patch('/inventory/instances', $instanceId, ['status' => 'active']);
 $client->delete('/inventory/instances', $instanceId);
 ```
 
+### Upserting records
+
+`upsert()` reads the id straight off the record you pass it (no separate `$id`
+argument) — it does a single-record `GET` to check whether that id already
+exists, then `put()`s if it does or `post()`s if it doesn't:
+
+```php
+$instanceData->id = $instanceId; // must already be a valid UUID
+$client->upsert('/inventory/instances', $instanceData);
+```
+
+This is the shape you want when the id is generated deterministically up
+front — e.g. a `uuid5` derived from a source system's own identifier — so
+the same input always resolves to the same FOLIO record whether it's the
+first time it's loaded or a re-run.
+
 ### Reference data
 
 ```php
@@ -205,7 +221,7 @@ progress (including full response dumps) to stdout while an export runs.
 | [`FolioLogger`](src/folio/FolioLogger.php) | Tab-delimited query log, optional `error_log` mirroring | — |
 | [`FolioAuth`](src/folio/FolioAuth.php) | Login/token lifecycle (RTR), tracks access-token expiry | `FolioConfig` |
 | [`FolioInformation`](src/folio/FolioInformation.php) | Read-only tenant/environment metadata | `FolioConfig`, `FolioAuth` |
-| [`FolioClient`](src/folio/FolioClient.php) | Core HTTP client: GET/PUT/PATCH/POST/DELETE + pagination | `FolioConfig`, `FolioAuth`, `FolioUtils`, `FolioLogger`?, `FolioInformation`? |
+| [`FolioClient`](src/folio/FolioClient.php) | Core HTTP client: GET/PUT/PATCH/POST/UPSERT/DELETE + pagination | `FolioConfig`, `FolioAuth`, `FolioUtils`, `FolioLogger`?, `FolioInformation`? |
 | [`FolioFileHandler`](src/folio/FolioFileHandler.php) | Binary file upload/download | `FolioClient` |
 | [`FolioDataExport`](src/folio/FolioDataExport.php) | Orchestrates the data-export workflow | `FolioClient`, `FolioFileHandler` |
 | [`FolioReferenceDataManager`](src/folio/FolioReferenceDataManager.php) | Reference/control-vocabulary lookups (locations, material types, patron groups, etc.) | `FolioClient` |
@@ -223,7 +239,7 @@ Every class has a matching PHPUnit test in [`tests/`](tests). After `composer in
 vendor/bin/phpunit
 ```
 
-135 tests, ~6 seconds. Most tests use Guzzle's `MockHandler` to inject canned HTTP
+143 tests, ~6 seconds. Most tests use Guzzle's `MockHandler` to inject canned HTTP
 responses — no real network access is needed. Two spots build their own Guzzle client
 internally rather than accepting an injected one (`FolioAuth::refreshTokens()` and
 `FolioFileHandler::getFile()`), so their tests instead start a real local PHP built-in web

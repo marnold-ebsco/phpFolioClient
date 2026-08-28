@@ -346,6 +346,102 @@ if (!$allowLiveWrites) {
     }
 }
 
+if (!$allowLiveWrites) {
+    print "UPSERT (insert then update) item - skipped (set FOLIO_ALLOW_LIVE_WRITES=1 to run)\n\n";
+} else {
+    // Master data (e.g. items) gets deterministic v5 ids: FOLIO's own
+    // well-known namespace (matching the FOLIO-FSE/folio_uuid migration
+    // library's convention) hashed with "{tenant}:{recordType}:{key}" —
+    // unlike reference data's random v4 ids (see the location POST test
+    // above). Same tenant+barcode always maps to the same id, which is
+    // exactly the property an upsert test needs to exercise both the
+    // insert and update path against one id.
+    $folioUuidNamespace = '8405ae4d-b315-42e1-918a-d1919900cf3f';
+    $upsertBarcode = 'upsert-test-barcode-0001';
+    $upsertId = null;
+    $areaBegin=microtime(true);
+    try{
+        // borrow valid reference-data ids from an existing item so this
+        // test doesn't have to hardcode/guess a valid holdings/material/
+        // loan type combination
+        $existingItems = $folio->get('item-storage/items',null,['limit'=>1],FolioClient::RETURN_FULL_OBJECT);
+        if (!$existingItems->totalRecords) {
+            throw new Exception('No existing item found to borrow reference ids from');
+        }
+        $template = $existingItems->items[0];
+
+        print "UPSERT (insert)\n";
+        $tenantId = $folio->getInformation()->getTenantId();
+        $folioUuidName = implode(':', [$tenantId, 'items', $upsertBarcode]);
+        $upsertId = generateUuid(5, $folioUuidNamespace, $folioUuidName);
+        $item = new stdClass();
+        $item->id = $upsertId;
+        $item->barcode = $upsertBarcode;
+        $item->holdingsRecordId = $template->holdingsRecordId;
+        $item->materialTypeId = $template->materialTypeId;
+        $item->permanentLoanTypeId = $template->permanentLoanTypeId;
+        $item->status = (object) ['name' => 'Available'];
+
+        $insertBegin = microtime(true);
+        $folio->upsert('item-storage/items', $item);
+        $insertElapsed = microtime(true) - $insertBegin;
+        print "insert status: " . $folio->getLastStatusCode() . PHP_EOL;
+        print "insert elapsed: " . number_format($insertElapsed, 2) . " seconds.\n";
+
+        $created = $folio->getOne('item-storage/items', $upsertId);
+        if ($created->barcode === $upsertBarcode) {
+            print "  insert succeeded\n";
+        } else {
+            $failures++;
+            print "  insert failed (barcode mismatch)\n";
+        }
+
+        print "UPSERT (update)\n";
+        // PUT must echo back server-assigned fields (hrid, metadata, etc.)
+        // unchanged, so the update is built on the record just read back
+        // rather than the minimal insert payload.
+        $item = $created;
+        unset($item->metadata);
+        $item->copyNumber = 'upsert test copy';
+        $updateBegin = microtime(true);
+        $folio->upsert('item-storage/items', $item);
+        $updateElapsed = microtime(true) - $updateBegin;
+        print "update status: " . $folio->getLastStatusCode() . PHP_EOL;
+        print "update elapsed: " . number_format($updateElapsed, 2) . " seconds.\n";
+
+        $updated = $folio->getOne('item-storage/items', $upsertId);
+        if ($updated->copyNumber === $item->copyNumber) {
+            print "  update succeeded\n";
+        } else {
+            $failures++;
+            print "  update failed (copyNumber mismatch)\n";
+        }
+
+        // re-derive the id from the same namespace + tenant:type:barcode
+        // name to confirm it's deterministic, as master data ids are expected to be
+        $rederivedId = generateUuid(5, $folioUuidNamespace, $folioUuidName);
+        if ($rederivedId !== $upsertId) {
+            $failures++;
+            print "  v5 UUID was not deterministic: $rederivedId != $upsertId\n";
+        }
+    }catch(Exception $e){
+        $failures++;
+        print "  Exception: " . $e->getMessage() . PHP_EOL;
+    }finally{
+        // Always attempt cleanup, even if insert/update above failed, so a
+        // broken run doesn't leave a test item behind.
+        if ($upsertId) {
+            try {
+                $folio->delete('item-storage/items', $upsertId);
+            } catch (Exception $e) {
+                $failures++;
+                print "  Cleanup exception: " . $e->getMessage() . PHP_EOL;
+            }
+        }
+        print "Elapsed time: " . number_format((microtime(true) - $areaBegin),2) . " seconds.\n\n";
+    }
+}
+
 try{
     print"GET ALL empty\n";
     $count = 0;
@@ -485,6 +581,80 @@ print "Script elapsed time: " . number_format((microtime(true) - $scriptBegin),2
 exit($failures > 0 ? 1 : 0);
 
 
+
+/**
+ * Generate a UUID of the given RFC 4122 version.
+ *
+ * - v1 (time-based): no arguments needed; node id is randomized (no NIC
+ *   lookup) with its multicast bit set, per RFC 4122 4.5, to mark it as
+ *   not a real MAC address.
+ * - v3/v5 (name-based, MD5/SHA-1): deterministic — the same
+ *   $namespace + $name always produces the same UUID. This is how FOLIO
+ *   master data (e.g. items) is expected to get its ids in this test,
+ *   as opposed to the random v4 ids reference data uses.
+ * - v4 (random): default; no arguments needed.
+ */
+function generateUuid(int $version = 4, ?string $namespace = null, ?string $name = null): string {
+    return match ($version) {
+        1 => generateUuidV1(),
+        3, 5 => generateUuidNameBased($version, $namespace, $name),
+        4 => generateUuidV4(),
+        default => throw new \InvalidArgumentException("Unsupported UUID version: $version"),
+    };
+}
+
+function generateUuidV1(): string {
+    // 60-bit count of 100-ns intervals since 1582-10-15, per RFC 4122 4.1.4.
+    $gregorianOffset = 0x01B21DD213814000;
+    $timestamp = (int) (microtime(true) * 10_000_000) + $gregorianOffset;
+
+    $timeLow = $timestamp & 0xFFFFFFFF;
+    $timeMid = ($timestamp >> 32) & 0xFFFF;
+    $timeHiAndVersion = (($timestamp >> 48) & 0x0FFF) | 0x1000;
+
+    $clockSeq = random_int(0, 0x3FFF);
+    $clockSeqHiAndReserved = (($clockSeq >> 8) & 0x3F) | 0x80;
+    $clockSeqLow = $clockSeq & 0xFF;
+
+    // No real NIC available; use a random node id with the multicast bit
+    // set, marking it explicitly as not a real MAC address (RFC 4122 4.5).
+    $node = random_bytes(6);
+    $node[0] = chr(ord($node[0]) | 0x01);
+
+    return sprintf(
+        '%08x-%04x-%04x-%02x%02x-%s',
+        $timeLow, $timeMid, $timeHiAndVersion, $clockSeqHiAndReserved, $clockSeqLow, bin2hex($node)
+    );
+}
+
+function generateUuidV4(): string {
+    $bytes = random_bytes(16);
+    $bytes[6] = chr((ord($bytes[6]) & 0x0f) | 0x40); // version 4
+    $bytes[8] = chr((ord($bytes[8]) & 0x3f) | 0x80); // variant
+    return formatUuidBytes($bytes);
+}
+
+function generateUuidNameBased(int $version, ?string $namespace, ?string $name): string {
+    if ($namespace === null || $name === null) {
+        throw new \InvalidArgumentException("UUID v$version requires both a namespace UUID and a name");
+    }
+    $namespaceBytes = hex2bin(str_replace('-', '', $namespace));
+    if ($namespaceBytes === false || strlen($namespaceBytes) !== 16) {
+        throw new \InvalidArgumentException("Namespace must be a valid UUID");
+    }
+
+    $hash = $version === 3 ? md5($namespaceBytes . $name, true) : sha1($namespaceBytes . $name, true);
+    $bytes = substr($hash, 0, 16); // sha1 yields 20 bytes; only the first 16 are used
+
+    $bytes[6] = chr((ord($bytes[6]) & 0x0f) | ($version << 4));
+    $bytes[8] = chr((ord($bytes[8]) & 0x3f) | 0x80); // variant
+
+    return formatUuidBytes($bytes);
+}
+
+function formatUuidBytes(string $bytes): string {
+    return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($bytes), 4));
+}
 
 function mattypeExists(FolioClient $folio, $name){
     $results = $folio->get('material-types','name=="' . $name . '"',[],FolioClient::RETURN_FULL_OBJECT);
