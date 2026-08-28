@@ -101,7 +101,7 @@ try{
     $exportHandler->dataExportAll();
 
     // check if file was created
-    $pattern = 'testExport*.mrc';
+    $pattern = 'instance-all-*.mrc';
     $fiveMinutesAgo = time() - 300; // 5 minutes * 60 seconds
 
     $foundFiles = [];
