@@ -225,6 +225,67 @@ final class FolioClientTest extends TestCase {
         $this->assertStringContainsString('/inventory/instances/abc-123', (string) $request->getUri());
     }
 
+    // --- upsert() ----------------------------------------------------------
+
+    public function testUpsertPutsWhenRecordExists(): void {
+        $id = 'e4a1c3d0-1234-4abc-89ab-1234567890ab';
+        $history = [];
+        $client = $this->buildClient([
+            $this->jsonResponse(200, ['id' => $id, 'title' => 'Old']),
+            new Response(204, [], ''),
+        ], $history);
+
+        $client->upsert('/inventory/instances', ['id' => $id, 'title' => 'New']);
+
+        $this->assertCount(2, $history);
+        $this->assertSame('GET', $history[0]['request']->getMethod());
+        $this->assertStringContainsString("/inventory/instances/$id", (string) $history[0]['request']->getUri());
+        $this->assertSame('PUT', $history[1]['request']->getMethod());
+        $this->assertStringContainsString("/inventory/instances/$id", (string) $history[1]['request']->getUri());
+        $this->assertSame(['id' => $id, 'title' => 'New'], json_decode((string) $history[1]['request']->getBody(), true));
+    }
+
+    public function testUpsertPostsWhenRecordMissing(): void {
+        $id = 'e4a1c3d0-1234-4abc-89ab-1234567890ab';
+        $history = [];
+        $client = $this->buildClient([
+            new Response(404, [], ''),
+            $this->jsonResponse(201, ['id' => $id]),
+        ], $history);
+
+        $client->upsert('/inventory/instances', ['id' => $id, 'title' => 'New']);
+
+        $this->assertCount(2, $history);
+        $this->assertSame('GET', $history[0]['request']->getMethod());
+        $this->assertSame('POST', $history[1]['request']->getMethod());
+        $this->assertStringContainsString('/inventory/instances', (string) $history[1]['request']->getUri());
+        $this->assertSame(['id' => $id, 'title' => 'New'], json_decode((string) $history[1]['request']->getBody(), true));
+    }
+
+    public function testUpsertThrowsWhenIdFieldMissing(): void {
+        $client = $this->buildClient([]);
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage("valid UUID 'id' field");
+        $client->upsert('/inventory/instances', ['title' => 'New']);
+    }
+
+    public function testUpsertThrowsOnInvalidUuid(): void {
+        $client = $this->buildClient([]);
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage("valid UUID 'id' field");
+        $client->upsert('/inventory/instances', ['id' => 'not-a-uuid', 'title' => 'New']);
+    }
+
+    public function testUpsertPropagatesNonNotFoundErrors(): void {
+        $id = 'e4a1c3d0-1234-4abc-89ab-1234567890ab';
+        $client = $this->buildClient([new Response(500, [], '')]);
+
+        $this->expectException(ServerException::class);
+        $client->upsert('/inventory/instances', ['id' => $id, 'title' => 'New']);
+    }
+
     // --- rawRequest() (D11) ----------------------------------------------
 
     public function testRawRequestDelegatesToInternalRequest(): void {

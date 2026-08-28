@@ -448,7 +448,54 @@ class FolioClient {
         $options = array_replace_recursive($defaultOptions, $options ?? []);
 
         return $this->_request('POST', $endpoint, null , [], $tenant_id, $options);
-        
+
+    }
+
+    /**
+     * Create or update a record, keyed by its own `id` field: {@see put()}
+     * if a record with that id already exists, {@see post()} if it doesn't.
+     *
+     * Existence is determined with a single-record `GET $endpoint/$id`
+     * (the same lookup {@see getOne()} performs) — one HTTP round trip
+     * to decide, then one more to write, which is the minimum possible
+     * for a client that can't assume either outcome ahead of time. A 404
+     * on the lookup means "doesn't exist yet"; any other error propagates
+     * unchanged.
+     *
+     * @param $endpoint  API endpoint to call (required).
+     * @param $params    The record data to send, as an array, object, or
+     *                   JSON string; must include a valid UUID `id` field
+     *                   (per {@see FolioUtils::isValidUuid()}) — unlike
+     *                   {@see post()}, `upsert()` has to know the id
+     *                   up front to check for an existing record.
+     * @param $tenant_id Tenant id to query against, for ECS (consortial)
+     *                   environments; null uses the client's default tenant.
+     * @throws \Exception If `$params` has no `id` field, or it isn't a valid UUID.
+     * @throws \GuzzleHttp\Exception\ClientException|\GuzzleHttp\Exception\ServerException
+     *                     If the underlying HTTP request returns a 4xx/5xx response
+     *                     (other than the 404 used to detect a missing record).
+     * @throws \GuzzleHttp\Exception\ConnectException If the request cannot connect.
+     */
+    public function upsert(string $endpoint, mixed $params, ?string $tenant_id = null): void {
+        $body = is_object($params) ? (array) $params : (is_string($params) ? json_decode($params, true) : $params);
+        $id = $body['id'] ?? null;
+        if (!is_string($id) || !$this->folioUtils->isValidUuid($id)) {
+            throw new \Exception("upsert requires \$params to have a valid UUID 'id' field");
+        }
+
+        $exists = true;
+        try {
+            $this->get("$endpoint/$id", null, null, self::RETURN_FULL_OBJECT, $tenant_id);
+        } catch (ClientException $e) {
+            if ($e->getResponse()?->getStatusCode() !== 404) {
+                throw $e;
+            }
+            $exists = false;
+        }
+
+        $exists
+            ? $this->put($endpoint, $id, $params, $tenant_id)
+            : $this->post($endpoint, $params, $tenant_id);
     }
 
     /**
