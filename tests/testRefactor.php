@@ -57,9 +57,79 @@ try{
 }
 
 
-// $exportHandler->dataExport("/home/marnold/phpFolioClient2/testExport.csv");
+// try{
+//     print "Testing data export (from list)\n";
+//     $areaBegin=microtime(true);
+//     $exportHandler->dataExport("/home/marnold/phpFolioClient2/testExport.csv");
+
+//     // check if file was created
+//     $pattern = 'testExport*.mrc';
+//     $fiveMinutesAgo = time() - 300; // 5 minutes * 60 seconds
+
+//     $foundFiles = [];
+
+//     foreach (glob($pattern) as $file) {
+//         // Check if it is a file and modified/created within the last 5 minutes
+//         if (is_file($file) && filemtime($file) >= $fiveMinutesAgo) {
+//             $foundFiles[] = $file;
+//         }
+//     }
+
+//     if(count($foundFiles) > 0){
+//         print "  Data export (list) was successful\n";
+//         $mrc_files = glob($directory . '/*.mrc');
+        // foreach ($mrc_files as $file) {
+        //     if (is_file($file)) {
+        //         unlink($file);
+        //     }
+        // }
+//     }else{
+//         throw new Exception('Data export (list) failed');
+//     }
+// }catch(Exception $e){
+//     $failures++;
+//     print "  Exception: " . $e->getMessage() . PHP_EOL;
+// }finally{
+//     print "Elapsed time: " . number_format((microtime(true) - $areaBegin),2) . " seconds.\n\n";
+// }
 // exit;
 
+
+try{
+    print "Testing data export all\n";
+    $areaBegin=microtime(true);
+    $exportHandler->dataExportAll();
+
+    // check if file was created
+    $pattern = 'testExport*.mrc';
+    $fiveMinutesAgo = time() - 300; // 5 minutes * 60 seconds
+
+    $foundFiles = [];
+
+    foreach (glob($pattern) as $file) {
+        // Check if it is a file and modified/created within the last 5 minutes
+        if (is_file($file) && filemtime($file) >= $fiveMinutesAgo) {
+            $foundFiles[] = $file;
+        }
+    }
+
+    if(count($foundFiles) > 0){
+        print "  Data export all was successful\n";
+        $mrc_files = glob($directory . '/*.mrc');
+        foreach ($mrc_files as $file) {
+            if (is_file($file)) {
+                unlink($file);
+            }
+        }
+    }else{
+        throw new Exception('Data export all failed');
+    }
+}catch(Exception $e){
+    $failures++;
+    print "  Exception: " . $e->getMessage() . PHP_EOL;
+}finally{
+    print "Elapsed time: " . number_format((microtime(true) - $areaBegin),2) . " seconds.\n\n";
+}
 // print "Export all marc data\n";
 // $exportHandler->dataExportAll();
 // exit;
