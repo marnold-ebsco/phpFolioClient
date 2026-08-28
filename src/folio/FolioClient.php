@@ -31,7 +31,7 @@ use stdClass;
  * itself was never applied server-side.
  */
 class FolioClient {
-    public const VERSION = '2.0.6';
+    public const VERSION = '2.0.8';
     public const RETURN_FULL_OBJECT = -1;
 
     private FolioConfig $config;
