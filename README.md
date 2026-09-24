@@ -50,7 +50,24 @@ library that need it; general application code should stick to `get()`/`getOne()
 ---
 
 ## Setup
-To deploy, copy the `composer.json` file (or create a new one) to the root of your working directory for version 1
+
+### Quick install (no clone required)
+
+Bootstrap a new project directory with `composer.json`, the library installed,
+and a sample config/wiring script, without cloning this repository yourself:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/marnold-ebsco/phpFolioClient/main/bin/install.sh | bash -s -- --dir my-project
+```
+
+Under the hood this runs `composer require`, which pulls a release archive
+from GitHub (not a full git clone) as long as the target version is tagged.
+See `install.sh --help` for options (`--dir`, `--version`, `--name`, `--force`).
+
+### Manual setup
+
+To deploy by hand, copy the `composer.json` file (or create a new one) to the
+root of your working directory:
 
 ```json
 {
@@ -69,12 +86,6 @@ To deploy, copy the `composer.json` file (or create a new one) to the root of yo
 ```bash
 composer require marnold-ebsco/phpfolioclient:^2.0.0
 ```
-
-Use this for verson 2:
-
-Then run:
-
-
 
 ### Configuration
 
