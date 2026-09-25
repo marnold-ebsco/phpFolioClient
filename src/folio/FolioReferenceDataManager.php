@@ -210,6 +210,39 @@ class FolioReferenceDataManager{
     }
 
     /**
+     * Stream all statistical code records.
+     *
+     * @param $tenant_id Tenant id to query against, for ECS (consortial)
+     *                   environments; null uses the client's default tenant.
+     * @return A `\Generator` yielding each statistical code record object.
+     */
+    public function getStatisticalCodeObjects(string|null $tenant_id = null): Generator {
+        yield from $this->client->get('statistical-codes', tenant_id: $tenant_id);
+    }
+
+    /**
+     * Get all statistical codes as an `id => code` lookup array.
+     *
+     * @param $tenant_id Tenant id to query against, for ECS (consortial)
+     *                   environments; null uses the client's default tenant.
+     * @return Associative array mapping statistical code id to its `code`.
+     */
+    public function getStatisticalCodes(string|null $tenant_id = null): array {
+        return $this->toIdMap($this->getStatisticalCodeObjects(tenant_id: $tenant_id), 'code');
+    }
+
+    /**
+     * Get all statistical codes as an `id => name` lookup array.
+     *
+     * @param $tenant_id Tenant id to query against, for ECS (consortial)
+     *                   environments; null uses the client's default tenant.
+     * @return Associative array mapping statistical code id to its `name`.
+     */
+    public function getStatisticalCodeNames(string|null $tenant_id = null): array {
+        return $this->toIdMap($this->getStatisticalCodeObjects(tenant_id: $tenant_id), 'name');
+    }
+
+    /**
      * Get the list of module ids installed for a tenant.
      *
      * Tolerant of two possible response shapes for this endpoint: a raw

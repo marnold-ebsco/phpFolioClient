@@ -65,6 +65,35 @@ final class FolioReferenceDataManagerTest extends TestCase {
         $this->assertSame(['loc-1' => 'MAIN'], $manager->getLocationCodes());
     }
 
+    // --- statistical codes ---
+
+    public function testGetStatisticalCodeObjectsYieldsRecords(): void {
+        $manager = $this->buildManager([
+            $this->jsonResponse(['statisticalCodes' => [(object) ['id' => 'stat-1', 'name' => 'Weeded', 'code' => 'WEED']], 'totalRecords' => 1]),
+        ]);
+
+        $records = iterator_to_array($manager->getStatisticalCodeObjects());
+
+        $this->assertCount(1, $records);
+        $this->assertSame('Weeded', $records[0]->name);
+    }
+
+    public function testGetStatisticalCodesReturnsIdCodeMap(): void {
+        $manager = $this->buildManager([
+            $this->jsonResponse(['statisticalCodes' => [(object) ['id' => 'stat-1', 'name' => 'Weeded', 'code' => 'WEED']], 'totalRecords' => 1]),
+        ]);
+
+        $this->assertSame(['stat-1' => 'WEED'], $manager->getStatisticalCodes());
+    }
+
+    public function testGetStatisticalCodeNamesReturnsIdNameMap(): void {
+        $manager = $this->buildManager([
+            $this->jsonResponse(['statisticalCodes' => [(object) ['id' => 'stat-1', 'name' => 'Weeded', 'code' => 'WEED']], 'totalRecords' => 1]),
+        ]);
+
+        $this->assertSame(['stat-1' => 'Weeded'], $manager->getStatisticalCodeNames());
+    }
+
     // --- a couple of the other categories, to exercise toIdMap() generically ---
 
     public function testGetAddressTypesUsesAddressTypeField(): void {
