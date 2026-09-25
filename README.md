@@ -199,6 +199,9 @@ $locations = $refData->getLocations();       // materialized [id => name] array
 foreach ($refData->getLocationObjects() as $location) {  // Generator of full objects
     // ...
 }
+
+$statisticalCodes = $refData->getStatisticalCodes();       // [id => code] array
+$statisticalCodeNames = $refData->getStatisticalCodeNames(); // [id => name] array
 ```
 
 ### Data export
@@ -250,7 +253,7 @@ Every class has a matching PHPUnit test in [`tests/`](tests). After `composer in
 vendor/bin/phpunit
 ```
 
-143 tests, ~6 seconds. Most tests use Guzzle's `MockHandler` to inject canned HTTP
+146 tests, ~6 seconds. Most tests use Guzzle's `MockHandler` to inject canned HTTP
 responses — no real network access is needed. Two spots build their own Guzzle client
 internally rather than accepting an injected one (`FolioAuth::refreshTokens()` and
 `FolioFileHandler::getFile()`), so their tests instead start a real local PHP built-in web
