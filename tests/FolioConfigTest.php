@@ -3,6 +3,7 @@ namespace phpFolioClient\Tests;
 
 use InvalidArgumentException;
 use phpFolioClient\FolioConfig;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 final class FolioConfigTest extends TestCase {
@@ -86,9 +87,7 @@ final class FolioConfigTest extends TestCase {
         $this->assertSame('primary', $config->name);
     }
 
-    /**
-     * @dataProvider booleanLikeStringProvider
-     */
+    #[DataProvider('booleanLikeStringProvider')]
     public function testSslVerifyNormalizesRecognizedBooleanStrings(string $input, bool $expected): void {
         $config = new FolioConfig(self::REQUIRED + ['sslVerify' => $input]);
 

@@ -5,6 +5,7 @@ use GuzzleHttp\Exception\ClientException;
 use phpFolioClient\FolioAuth;
 use phpFolioClient\FolioConfig;
 use phpFolioClient\Tests\Support\PhpServerTrait;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -50,9 +51,7 @@ final class FolioAuthTest extends TestCase {
         $this->assertSame('RTR', $auth->getAuthFlavor());
     }
 
-    /**
-     * @dataProvider needsRefreshProvider
-     */
+    #[DataProvider('needsRefreshProvider')]
     public function testNeedsRefresh(string $token, int $atExpires, int $needsRefreshBefore, bool $expected): void {
         $auth = new FolioAuth($this->makeConfig('diku_admin'));
         $auth->needsRefreshBeforeExpires = $needsRefreshBefore;
