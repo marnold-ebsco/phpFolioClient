@@ -167,6 +167,26 @@ final class FolioClientTest extends TestCase {
         $this->assertSame([], $records);
     }
 
+    /**
+     * B28: a multi-clause OR query must stay parenthesized when combined
+     * with the id-cursor filter, or the cursor only bounds the first
+     * clause and every other OR'd clause re-matches from the start on
+     * every page (never terminating on a real server).
+     */
+    public function testGetAllParenthesizesMultiClauseOrQuery(): void {
+        $history = [];
+        $client = $this->buildClient([
+            $this->jsonResponse(200, ['instances' => [(object) ['id' => '1']], 'totalRecords' => 2]),
+            $this->jsonResponse(200, ['instances' => [], 'totalRecords' => 2]),
+        ], $history);
+
+        iterator_to_array($client->getAll('/inventory/instances', 'a=="1" or a=="2"'));
+
+        $this->assertCount(2, $history);
+        $secondQuery = urldecode((string) $history[1]['request']->getUri()->getQuery());
+        $this->assertStringContainsString('id > "1" and (a=="1" or a=="2")', $secondQuery);
+    }
+
     // --- getAll_loop() (offset/limit pagination) ------------------------
 
     public function testGetAllLoopPaginatesByOffset(): void {

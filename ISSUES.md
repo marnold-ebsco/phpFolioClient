@@ -10,12 +10,13 @@ misbehavior.
 
 Severity legend: 🔴 High (crash / data loss / security) · 🟡 Medium · ⚪ Low / cleanup.
 
-**Status: every bug (B1–B27) and security issue (S1–S3, S5) has been fixed. S4 remains an
+**Status: every bug (B1–B28) and security issue (S1–S3, S5) has been fixed. S4 remains an
 open documented limitation (no reliable general fix exists). Every design/consistency issue
 (D1, D3, D5–D12) has been fixed; D2 and D4 were deliberately left as documentation-only
 (see their entries below for why). Five extra latent bugs turned up while fixing the above
 and while writing the test suite (`tests/`) — see
-[§0](#0-extra-issues-found-while-fixing-the-above). All 135 tests pass; see
+[§0](#0-extra-issues-found-while-fixing-the-above). B28 turned up later, from a live-tenant
+run of `tests/testRefactor.php`. All tests pass; see
 [README.md](README.md#running-tests) for how to run them.**
 
 ---
@@ -72,6 +73,12 @@ additive/backward-compatible change — nothing else warranted a decision):
 | B25 | `FolioReferenceDataManager.php` | `getCustomFieldObjects()`'s module-id lookup now takes `array_values($matches)[0]` instead of `implode('', $matches)`, so it can no longer produce a garbled module id when more than one module matches. |
 | B26 | `FolioUtils.php` | Kept the strict v4/v5-only UUID check (per decision above); docblock now explicitly says it's FOLIO-specific and not a general-purpose validator. |
 | B27 | `FolioUtils.php` | `isJson()` now checks `$string === null \|\| $string === ''` instead of `!$string`, so the valid JSON string `"0"` is no longer misclassified as not-JSON. |
+
+### Session 3 (found via live-tenant testing)
+
+| Issue | File | Change |
+|---|---|---|
+| B28 | `FolioClient.php` | `getAll()`'s id-cursor pagination now wraps the caller's query in parentheses (`id > "X" and (<query>) sortBy id`) before combining it with the cursor filter. CQL has no implicit operator precedence, so a multi-clause `A or B or C` caller query previously produced `id > "X" and A or B or C`, which parses as `(id > "X" and A) or B or C` — the cursor only bounded the first OR clause, so every other clause kept re-matching from the start of the result set on every page. Against a real tenant this never terminates (or "terminates" only after redundantly re-yielding most of the dataset on every page). Found via a live run of `tests/testRefactor.php` querying `/users` with an `or`-joined `patronGroup==...` filter. Covered by `FolioClientTest::testGetAllParenthesizesMultiClauseOrQuery()`. |
 | S2 | `FolioConfig.php`, `FolioAuth.php` | Both classes now implement their own `__debugInfo()` that redacts their actual `password`/`token` properties. (`FolioClient::__debugInfo()`'s existing no-op redaction — it doesn't own those properties — is unchanged and already documented as such.) |
 | S3 | `FolioFileHandler.php` | Removed the hardcoded `'debug' => true` from `putFileX()`'s Guzzle options (per the "keep the method" decision above), which would otherwise have printed the session auth token to stdout/logs if the method were ever called. |
 | S5 | `FolioLogger.php` | Log file now opens in append mode (`'a'`) instead of truncate mode (`'w'`), so prior log history survives across multiple `FolioLogger` instances against the same path. |
@@ -329,6 +336,19 @@ it isn't mistakenly reused elsewhere for that purpose.
 
 ### ⚪ B27 — `isJson()` misclassifies the string `"0"` as not-JSON — ✅ FIXED
 **File:** `FolioUtils.php` — changed the guard to `$string === null || $string === ''`.
+
+### 🔴 B28 — `getAll()`'s id-cursor filter doesn't bind a multi-clause OR query — ✅ FIXED
+**File:** `FolioClient.php` — each subsequent page was fetched with
+`'id > "' . $end . '" and ' . $origQuery`. CQL has no implicit operator precedence beyond
+strict left-to-right evaluation, so a caller query like `A or B or C` combined this way became
+`id > "X" and A or B or C`, which parses as `(id > "X" and A) or B or C` — the cursor filter
+only bounded the first OR'd clause; every other clause matched unconditionally and kept
+re-matching records from the very start of the result set on every page. Against a small mock
+dataset this can look like harmless duplication, but against a real tenant (e.g. ~133K users
+filtered by several `patronGroup==...` clauses `or`'d together) it means the generator never
+converges — each page re-yields most of the dataset again, and the consumer's running count
+blows past the true total instead of terminating. **Fixed** by parenthesizing the caller's base
+query before combining it with the cursor: `'id > "' . $end . '" and (' . $baseQuery . ') sortBy id'`.
 
 ---
 

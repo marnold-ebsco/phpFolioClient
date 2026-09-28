@@ -20,7 +20,14 @@ trait PhpServerTrait {
             1 => ['pipe', 'w'],
             2 => ['pipe', 'w'],
         ];
-        $cmd = sprintf('php -S 127.0.0.1:%d %s', $port, escapeshellarg($routerScript));
+        // Pass the command as an array so proc_open() execs it directly
+        // instead of routing it through an intermediate `sh -c` shell; on
+        // this environment that shell double-forks instead of exec'ing,
+        // so proc_terminate()/proc_close() below would only ever kill the
+        // shell wrapper and leave the real php -S server orphaned forever
+        // (invisible until something like `| tail` blocks on the pipe fd
+        // the orphan keeps open).
+        $cmd = ['php', '-S', "127.0.0.1:$port", $routerScript];
         $process = proc_open($cmd, $descriptors, $pipes, dirname($routerScript));
         if (!is_resource($process)) {
             throw new \RuntimeException('Could not start PHP built-in server for tests.');

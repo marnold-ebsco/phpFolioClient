@@ -310,8 +310,8 @@ class FolioClient {
      * @throws \GuzzleHttp\Exception\ConnectException If the request cannot connect.
      */
     public function getAll(string $endpoint, ?string $query = null, array|object|null $params = null, ?string $key = null, ?string $tenant_id = null)  {
-        $query = ($query ?? 'cql.allRecords=1') . ' sortBy id';     //set initial query
-        $origQuery = $query;
+        $baseQuery = $query ?? 'cql.allRecords=1';
+        $query = $baseQuery . ' sortBy id';     //set initial query
 
         $response = $this->_request('GET', $endpoint, $query, $params, $tenant_id);     // get first response
         if ($response === null) {
@@ -338,7 +338,13 @@ class FolioClient {
         // a page comes back empty (see B8 in ISSUES.md: totalRecords is a
         // one-time snapshot from the first page, not a live loop condition).
         while (true) {
-            $query = 'id > "' . $end . '" and ' . $origQuery;
+            // Parenthesize $baseQuery (see B28 in ISSUES.md): CQL has no
+            // implicit operator precedence, so "id > X and A or B" is
+            // parsed as "(id > X and A) or B" — the cursor filter would
+            // only bound the first term of a multi-clause caller query,
+            // letting every other OR'd clause re-match from the start on
+            // every page.
+            $query = 'id > "' . $end . '" and (' . $baseQuery . ') sortBy id';
             $response = $this->_request('GET', $endpoint, $query, $params, $tenant_id);
             if ($response === null || empty($response->{$key})) {
                 break;

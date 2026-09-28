@@ -57,6 +57,31 @@ try{
 }
 
 
+try{
+    print"GET ALL\n";
+    $count = 0;
+    $areaBegin=microtime(true);
+    $groups = $refData->getPatronGroups();
+    $exclude[] = 'zEBSCO Support Group';
+    $groupsToUse = array_diff($groups,$exclude);
+    $q = implode('" or patronGroup=="',array_keys($groupsToUse));
+    $query = '(patronGroup=="' . $q . '")';   // wrap the OR chain
+    print "$query\n";
+    $count = 0;
+    foreach($folio->getAll('users',$query,['limit'=>5000]) as $value){
+        $count++;
+        if(($count % 1000) == 0){
+            print "Processing: $count\r";
+        }
+    }
+    print "count: $count\n";
+}catch(Exception $e){
+    $failures++;
+    print "  Exception: " . $e->getMessage() . PHP_EOL;
+}finally{
+    print "Elapsed time: " . number_format((microtime(true) - $areaBegin),2) . " seconds.\n\n";
+}
+
 // try{
 //     print "Testing data export (from list)\n";
 //     $areaBegin=microtime(true);
