@@ -60,7 +60,7 @@ class FolioFileHandler {
                     'Accept' => 'application/json',
                     'X-Okapi-Tenant' => $tenant_id,
                     'Content-Type' => 'application/octet-stream',
-                    'Content-Length' => filesize($filename),
+                    'Content-Length' => (string) filesize($filename),
                     'X-Okapi-Token' => $this->auth->getAccessToken()
                 ],
                 'body' => $fileStream,

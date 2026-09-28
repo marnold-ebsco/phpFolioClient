@@ -4,6 +4,7 @@ namespace phpFolioClient\Tests;
 use phpFolioClient\FolioConfig;
 use phpFolioClient\FolioInformation;
 use phpFolioClient\Tests\Support\StubAuth;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 final class FolioInformationTest extends TestCase {
@@ -52,9 +53,7 @@ final class FolioInformationTest extends TestCase {
         $this->assertSame('diku_admin', $info->getUsername());
     }
 
-    /**
-     * @dataProvider hostnameProvider
-     */
+    #[DataProvider('hostnameProvider')]
     public function testGetHostnameStripsKnownPrefixesAndSuffixes(string $url, string $expected): void {
         $info = new FolioInformation($this->makeConfig(['okapiUrl' => $url]), new StubAuth());
 
