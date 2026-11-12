@@ -64,6 +64,25 @@ Under the hood this runs `composer require`, which pulls a release archive
 from GitHub (not a full git clone) as long as the target version is tagged.
 See `install.sh --help` for options (`--dir`, `--version`, `--name`, `--force`).
 
+### Quick install, pinned commit (no Composer VCS dependency)
+
+`bin/install-vendored.sh` is an alternative installer for cases where you'd
+rather not add this repo as a Composer VCS repository (e.g. air-gapped CI, or
+installing from an untagged commit). It downloads just the files phpFolioClient
+needs to run, pinned to one resolved commit SHA, into a target directory, then
+writes a local `composer.json` that autoloads them directly (still pulling
+`guzzlehttp/guzzle` from Packagist) and runs `composer install`:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/marnold-ebsco/phpFolioClient/main/bin/install-vendored.sh | bash -s -- --dir my-project
+```
+
+Re-running the same command later checks for a newer commit on `--ref`
+(default `main`) and updates the vendored files in place; pass `--check` to
+only report whether an update is available without changing anything. See
+`install-vendored.sh --help` for all options (`--dir`, `--ref`, `--no-composer`,
+`--check`).
+
 ### Manual setup
 
 To deploy by hand, copy the `composer.json` file (or create a new one) to the
