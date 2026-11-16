@@ -245,6 +245,109 @@ final class FolioClientTest extends TestCase {
         $this->assertStringContainsString('/inventory/instances/abc-123', (string) $request->getUri());
     }
 
+    // --- tenant_id override (B29) ----------------------------------------
+
+    /**
+     * B29: $tenant_id was accepted by every request method but silently
+     * dropped by _request(), so every call always used the config tenant
+     * regardless of what the caller passed. Covers GET, POST, PUT, PATCH,
+     * DELETE, and the generator-based GET paths (getEach/getAll/getAll_loop).
+     */
+    public function testGetSendsCallerTenantHeader(): void {
+        $history = [];
+        $client = $this->buildClient([
+            $this->jsonResponse(200, ['instances' => [], 'totalRecords' => 0]),
+        ], $history);
+
+        iterator_to_array($client->get('/inventory/instances', null, null, null, 'member-tenant'));
+
+        $this->assertSame('member-tenant', $history[0]['request']->getHeaderLine('X-Okapi-Tenant'));
+    }
+
+    public function testGetWithoutTenantIdUsesConfigTenant(): void {
+        $history = [];
+        $client = $this->buildClient([
+            $this->jsonResponse(200, ['instances' => [], 'totalRecords' => 0]),
+        ], $history);
+
+        iterator_to_array($client->get('/inventory/instances'));
+
+        $this->assertSame('diku', $history[0]['request']->getHeaderLine('X-Okapi-Tenant'));
+    }
+
+    public function testGetEachSendsCallerTenantHeader(): void {
+        $history = [];
+        $client = $this->buildClient([
+            $this->jsonResponse(200, ['instances' => [], 'totalRecords' => 0]),
+        ], $history);
+
+        iterator_to_array($client->getEach('/inventory/instances', null, null, null, 'member-tenant'));
+
+        $this->assertSame('member-tenant', $history[0]['request']->getHeaderLine('X-Okapi-Tenant'));
+    }
+
+    public function testGetAllSendsCallerTenantHeaderOnEveryPage(): void {
+        $history = [];
+        $client = $this->buildClient([
+            $this->jsonResponse(200, ['instances' => [(object) ['id' => '1']], 'totalRecords' => 2]),
+            $this->jsonResponse(200, ['instances' => [], 'totalRecords' => 2]),
+        ], $history);
+
+        iterator_to_array($client->getAll('/inventory/instances', null, null, null, 'member-tenant'));
+
+        $this->assertCount(2, $history);
+        foreach ($history as $entry) {
+            $this->assertSame('member-tenant', $entry['request']->getHeaderLine('X-Okapi-Tenant'));
+        }
+    }
+
+    public function testGetAllLoopSendsCallerTenantHeader(): void {
+        $history = [];
+        $client = $this->buildClient([
+            $this->jsonResponse(200, ['instances' => [], 'totalRecords' => 0]),
+        ], $history);
+
+        iterator_to_array($client->getAll_loop('/inventory/instances', null, ['limit' => 2], null, 'member-tenant'));
+
+        $this->assertSame('member-tenant', $history[0]['request']->getHeaderLine('X-Okapi-Tenant'));
+    }
+
+    public function testPutSendsCallerTenantHeader(): void {
+        $history = [];
+        $client = $this->buildClient([new Response(200, [], '')], $history);
+
+        $client->put('/inventory/instances', 'abc-123', ['title' => 'Updated'], 'member-tenant');
+
+        $this->assertSame('member-tenant', $history[0]['request']->getHeaderLine('X-Okapi-Tenant'));
+    }
+
+    public function testPatchSendsCallerTenantHeader(): void {
+        $history = [];
+        $client = $this->buildClient([new Response(200, [], '')], $history);
+
+        $client->patch('/inventory/instances', 'abc-123', ['status' => 'active'], 'member-tenant');
+
+        $this->assertSame('member-tenant', $history[0]['request']->getHeaderLine('X-Okapi-Tenant'));
+    }
+
+    public function testPostSendsCallerTenantHeader(): void {
+        $history = [];
+        $client = $this->buildClient([$this->jsonResponse(201, ['id' => 'new-id'])], $history);
+
+        $client->post('/inventory/instances', ['title' => 'New'], 'member-tenant');
+
+        $this->assertSame('member-tenant', $history[0]['request']->getHeaderLine('X-Okapi-Tenant'));
+    }
+
+    public function testDeleteSendsCallerTenantHeader(): void {
+        $history = [];
+        $client = $this->buildClient([new Response(204, [], '')], $history);
+
+        $client->delete('/inventory/instances', 'abc-123', 'member-tenant');
+
+        $this->assertSame('member-tenant', $history[0]['request']->getHeaderLine('X-Okapi-Tenant'));
+    }
+
     // --- upsert() ----------------------------------------------------------
 
     public function testUpsertPutsWhenRecordExists(): void {

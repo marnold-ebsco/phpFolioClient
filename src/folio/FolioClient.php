@@ -31,7 +31,7 @@ use stdClass;
  * itself was never applied server-side.
  */
 class FolioClient {
-    public const VERSION = '2.0.12';
+    public const VERSION = '2.1.0';
     public const RETURN_FULL_OBJECT = -1;
 
     private FolioConfig $config;
@@ -577,6 +577,11 @@ class FolioClient {
 
         $handledParams = $this->_handleParameters($endpoint,$method, $params, $query);
         $queryString = !empty($handledParams) ? '?' . http_build_query($handledParams) : '';
+
+        if ($tenant_id !== null) {
+            $options ??= [];
+            $options['headers'] = ['X-Okapi-Tenant' => $tenant_id] + ($options['headers'] ?? []);
+        }
 
         // Merge headers with defaults
         $finalOptions = $this->_buildRequestOptions($options);

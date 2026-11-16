@@ -49,6 +49,21 @@ final class FolioReferenceDataManagerTest extends TestCase {
         $this->assertSame('Main', $records[0]->name);
     }
 
+    /**
+     * B29: ReferenceDataManager's $tenant_id parameters must reach
+     * FolioClient::get() and from there the actual request header.
+     */
+    public function testGetLocationObjectsPassesTenantIdThrough(): void {
+        $history = [];
+        $manager = $this->buildManager([
+            $this->jsonResponse(['locations' => [], 'totalRecords' => 0]),
+        ], $history);
+
+        iterator_to_array($manager->getLocationObjects('member-tenant'));
+
+        $this->assertSame('member-tenant', $history[0]['request']->getHeaderLine('X-Okapi-Tenant'));
+    }
+
     public function testGetLocationsReturnsIdNameMap(): void {
         $manager = $this->buildManager([
             $this->jsonResponse(['locations' => [(object) ['id' => 'loc-1', 'name' => 'Main', 'code' => 'MAIN']], 'totalRecords' => 1]),

@@ -10,13 +10,14 @@ misbehavior.
 
 Severity legend: 🔴 High (crash / data loss / security) · 🟡 Medium · ⚪ Low / cleanup.
 
-**Status: every bug (B1–B28) and security issue (S1–S3, S5) has been fixed. S4 remains an
+**Status: every bug (B1–B29) and security issue (S1–S3, S5) has been fixed. S4 remains an
 open documented limitation (no reliable general fix exists). Every design/consistency issue
 (D1, D3, D5–D12) has been fixed; D2 and D4 were deliberately left as documentation-only
 (see their entries below for why). Five extra latent bugs turned up while fixing the above
 and while writing the test suite (`tests/`) — see
 [§0](#0-extra-issues-found-while-fixing-the-above). B28 turned up later, from a live-tenant
-run of `tests/testRefactor.php`. All tests pass; see
+run of `tests/testRefactor.php`; B29 turned up from an ECS tenant comparison returning
+identical results for two different tenants. All tests pass; see
 [README.md](README.md#running-tests) for how to run them.**
 
 ---
@@ -94,6 +95,20 @@ additive/backward-compatible change — nothing else warranted a decision):
 
 All edited files were re-checked with `php -l` after each change (no syntax errors), and no
 behavior outside the documented fixes above was changed.
+
+### Session 4 (ECS tenant-comparison report)
+
+| Issue | File | Change |
+|---|---|---|
+| B29 | `FolioClient.php` | `_request()` now actually forwards `$tenant_id` as the `X-Okapi-Tenant` header (merged ahead of `_buildRequestOptions()`'s defaults; a caller-supplied header of the same name in `$options` still wins). Previously `_request()` accepted the parameter but never read it, so `get()`/`getOne()`/`getEach()`/`getAll()`/`getAll_loop()`/`put()`/`patch()`/`post()`/`upsert()`/`delete()` — and everything that forwards a `$tenant_id` through them, including every `FolioReferenceDataManager::get*()` method and `FolioDataExport::dataExport()`'s `central_tenant_id` default — silently sent every request to `FolioConfig::$tenant_id` regardless of what was passed in. Found via an ECS (consortial) comparison between a central and a member tenant that came back identical, because both requests had gone to the config tenant; a write meant for a member tenant would likewise have landed on the config tenant. Login (`FolioAuth::refreshTokens()`) is unaffected and still authenticates against `$config->tenant_id` — see the ECS note below. Covered by new tests in `FolioClientTest` (GET/getEach/getAll/getAll_loop/PUT/PATCH/POST/DELETE) and `FolioReferenceDataManagerTest` (pass-through). **Behavior change:** any existing caller that was passing `$tenant_id` and relying on (or not noticing) it being ignored will now see requests actually routed to that tenant — bumped to v2.1.0. |
+
+**ECS note (ties to B29):** this library logs in once, against `$config->tenant_id`, and reuses
+that token for every request regardless of `$tenant_id` — it never performs a separate
+per-tenant login. This matches FOLIO's ECS (consortial) model, where a token minted against the
+*central* tenant is accepted by member tenants in the same consortium without a separate login;
+`$config->tenant_id` is expected to be set to the central tenant when a caller intends to pass
+member-tenant `$tenant_id`s to individual calls. This was true before this fix too (nothing
+about login changed) — B29 only fixed the request header that was being silently dropped.
 
 ---
 
@@ -336,6 +351,47 @@ it isn't mistakenly reused elsewhere for that purpose.
 
 ### ⚪ B27 — `isJson()` misclassifies the string `"0"` as not-JSON — ✅ FIXED
 **File:** `FolioUtils.php` — changed the guard to `$string === null || $string === ''`.
+
+### 🔴 B29 — `$tenant_id` is accepted everywhere but ignored by `_request()` — ✅ FIXED
+**File:** `FolioClient.php`, `_request()` — every public request method (`get`, `getOne`,
+`getEach`, `getAll`, `getAll_loop`, `put`, `patch`, `post`, `upsert`, `delete`), plus every
+`FolioReferenceDataManager::get*()` method and `FolioDataExport::dataExport()`'s
+`central_tenant_id` default, accepted a `$tenant_id` parameter and forwarded it down to
+`_request()` — which declared the parameter but never read it. `_buildRequestOptions()`
+unconditionally set `X-Okapi-Tenant` to `$this->config->tenant_id`, so every request, no
+matter what tenant was passed in, went to the config tenant. Found because an ECS
+(consortial) comparison between a central tenant and a member tenant came back identical:
+both requests had silently gone to the same (config) tenant. A write meant for a member
+tenant would likewise have landed on the config tenant instead — high priority.
+
+**Fix applied:** when `$tenant_id` is non-null, `_request()` now merges
+`['headers' => ['X-Okapi-Tenant' => $tenant_id]]` into `$options` *before* calling
+`_buildRequestOptions()`, so any caller-supplied header of the same name in `$options` still
+takes precedence (unchanged from the existing override rule), and the login tenant is
+untouched. `FolioFileHandler::putFile()`/`putFileX()` were already unaffected, since they set
+the header in `$options` themselves rather than relying on `$tenant_id`.
+
+**ECS token assumption (unchanged by this fix, now documented):** login (`FolioAuth::refreshTokens()`)
+always authenticates against `$config->tenant_id` and that one token is reused for every
+request regardless of `$tenant_id` — there is no per-tenant login. This relies on FOLIO's ECS
+model, where a token minted against the *central* tenant is accepted by member tenants in the
+same consortium. Callers intending to pass member-tenant `$tenant_id`s to individual calls
+should set `$config->tenant_id` to the central tenant.
+
+**Also confirmed:** `FolioDataExport::dataExport()`'s `$tenant_id ??= $this->config->central_tenant_id ?? $this->config->tenant_id;`
+default was already correct — it just had no effect before this fix because `_request()`
+dropped whatever tenant it resolved to. It now takes effect as originally intended: a data
+export with no explicit `$tenant_id` runs against `central_tenant_id` when the config sets
+one, falling back to `tenant_id` otherwise.
+
+**Tests:** `FolioClientTest` — `testGetSendsCallerTenantHeader`,
+`testGetWithoutTenantIdUsesConfigTenant`, `testGetEachSendsCallerTenantHeader`,
+`testGetAllSendsCallerTenantHeaderOnEveryPage`, `testGetAllLoopSendsCallerTenantHeader`,
+`testPutSendsCallerTenantHeader`, `testPatchSendsCallerTenantHeader`,
+`testPostSendsCallerTenantHeader`, `testDeleteSendsCallerTenantHeader`; plus
+`FolioReferenceDataManagerTest::testGetLocationObjectsPassesTenantIdThrough` for the
+pass-through path. **Behavior change:** bumped to v2.1.0 — any existing caller passing
+`$tenant_id` will now see it actually honored instead of silently ignored.
 
 ### 🔴 B28 — `getAll()`'s id-cursor filter doesn't bind a multi-clause OR query — ✅ FIXED
 **File:** `FolioClient.php` — each subsequent page was fetched with
