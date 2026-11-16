@@ -66,7 +66,6 @@ try{
     $groupsToUse = array_diff($groups,$exclude);
     $q = implode('" or patronGroup=="',array_keys($groupsToUse));
     $query = '(patronGroup=="' . $q . '")';   // wrap the OR chain
-    print "$query\n";
     $count = 0;
     foreach($folio->getAll('users',$query,['limit'=>5000]) as $value){
         $count++;
